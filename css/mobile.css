@@ -22,8 +22,13 @@
         right: 10px;
     }
 
+    .health-indicator {
+        width: 16px;
+        height: 16px;
+    }
+
     .hud-bottom {
-        bottom: 80px;
+        bottom: 180px;
         left: 10px;
         right: 10px;
     }
@@ -35,19 +40,31 @@
     }
 
     .touch-area {
-        width: 150px;
-        height: 150px;
+        width: 140px;
+        height: 140px;
         left: 10px;
+        bottom: 10px;
+    }
+
+    .joystick-base {
+        width: 100px;
+        height: 100px;
+    }
+
+    .joystick-handle {
+        width: 50px;
+        height: 50px;
     }
 
     .action-buttons {
         right: 10px;
+        bottom: 10px;
     }
 
     .action-btn {
-        width: 60px;
-        height: 60px;
-        font-size: 1.5em;
+        width: 70px;
+        height: 70px;
+        font-size: 1.8em;
     }
 
     .pause-content,
@@ -89,10 +106,20 @@
         height: 120px;
     }
 
+    .joystick-base {
+        width: 90px;
+        height: 90px;
+    }
+
+    .joystick-handle {
+        width: 45px;
+        height: 45px;
+    }
+
     .action-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 1.3em;
+        width: 60px;
+        height: 60px;
+        font-size: 1.5em;
     }
 
     .hud-btn {
@@ -127,18 +154,18 @@
     }
 
     #touchControls {
-        height: 100px;
+        height: 140px;
     }
 
     .touch-area {
-        width: 100px;
-        height: 100px;
+        width: 110px;
+        height: 110px;
     }
 
     .action-btn {
-        width: 45px;
-        height: 45px;
-        font-size: 1.1em;
+        width: 55px;
+        height: 55px;
+        font-size: 1.3em;
     }
 }
 
@@ -176,12 +203,12 @@
     }
 
     #touchControls {
-        height: 80px;
+        height: 100px;
     }
 
     .touch-area {
-        width: 80px;
-        height: 80px;
+        width: 100px;
+        height: 100px;
     }
 
     .action-buttons {
@@ -189,32 +216,30 @@
     }
 
     .action-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 1em;
+        width: 50px;
+        height: 50px;
+        font-size: 1.2em;
     }
 }
 
 /* Поддержка различных соотношений сторон */
 @media (aspect-ratio: 9/16) {
-    /* Высокие телефоны */
     .hud-top {
         top: 5px;
     }
 
     .hud-bottom {
-        bottom: 120px;
+        bottom: 160px;
     }
 }
 
 @media (aspect-ratio: 10/16) {
-    /* Стандартные телефоны */
     .hud-top {
         top: 10px;
     }
 
     .hud-bottom {
-        bottom: 100px;
+        bottom: 150px;
     }
 }
 
@@ -227,7 +252,7 @@
     }
 
     .hud-bottom {
-        bottom: max(100px, env(safe-area-inset-bottom));
+        bottom: max(200px, env(safe-area-inset-bottom));
         left: max(20px, env(safe-area-inset-left));
         right: max(20px, env(safe-area-inset-right));
     }
