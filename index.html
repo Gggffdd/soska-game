@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#667eea">
-    <title>Soska Chase</title>
+    <title>🔥 Soska Chase Ultimate</title>
     <style>
         * {
             margin: 0;
@@ -14,8 +14,8 @@
         }
         
         body {
-            font-family: Arial, sans-serif;
-            background: #1a1a2e;
+            font-family: 'Arial', sans-serif;
+            background: #0f0f1a;
             overflow: hidden;
             position: fixed;
             width: 100%;
@@ -43,35 +43,109 @@
             display: block;
             width: 100%;
             height: 100%;
-            background: #1a1a2e;
+            background: #0f0f1a;
+        }
+        
+        /* Анимированный фон для меню */
+        .menu-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            animation: bgPulse 8s ease-in-out infinite;
+        }
+        
+        @keyframes bgPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
         }
         
         .menu-content {
             text-align: center;
             background: rgba(255, 255, 255, 0.1);
-            padding: 2em;
-            border-radius: 20px;
+            padding: 2.5em;
+            border-radius: 25px;
             border: 1px solid rgba(255, 255, 255, 0.2);
             margin: 1em;
             color: white;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 10;
+            max-width: 90%;
         }
         
         .menu-content h1 {
-            font-size: 2em;
-            margin-bottom: 0.5em;
+            font-size: 2.8em;
+            margin-bottom: 0.3em;
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+        
+        @keyframes titleGlow {
+            0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 107, 107, 0.5)); }
+            50% { filter: drop-shadow(0 0 20px rgba(254, 202, 87, 0.8)); }
         }
         
         .menu-btn {
-            padding: 1em 2em;
+            padding: 1.2em 2em;
             font-size: 1.1em;
-            background: #ff6b6b;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
             border: none;
-            border-radius: 25px;
+            border-radius: 15px;
             color: white;
             cursor: pointer;
-            margin: 0.5em;
-            width: 200px;
+            margin: 0.7em;
+            width: 250px;
             display: block;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .menu-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        .menu-btn:hover::before {
+            left: 100%;
+        }
+        
+        .menu-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(255, 107, 107, 0.4);
+        }
+        
+        .menu-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .special-btn {
+            background: linear-gradient(135deg, #feca57, #ff9f43);
+            box-shadow: 0 8px 20px rgba(254, 202, 87, 0.3);
+        }
+        
+        .premium-btn {
+            background: linear-gradient(135deg, #48dbfb, #0abde3);
+            box-shadow: 0 8px 20px rgba(72, 219, 251, 0.3);
         }
         
         #gameHUD {
@@ -81,35 +155,123 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
+            z-index: 100;
         }
         
         .hud-top {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
+            top: 20px;
+            left: 20px;
+            right: 20px;
             display: flex;
             justify-content: space-between;
+            align-items: flex-start;
             color: white;
-            font-size: 1em;
+            font-size: 1.1em;
+        }
+        
+        .stats-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95em;
+        }
+        
+        .stat-value {
+            color: #feca57;
+            font-weight: bold;
         }
         
         .health-indicators {
             display: flex;
-            gap: 5px;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .health-indicator {
-            width: 15px;
-            height: 15px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .health-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: 0.5s;
         }
         
         .health-indicator.active {
             background: #feca57;
+            border-color: #ffa726;
+            box-shadow: 0 0 15px #feca57;
         }
+        
+        .health-indicator.active::before {
+            left: 100%;
+        }
+        
+        .powerup-indicators {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        
+        .powerup-indicator {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .powerup-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            animation: shine 2s infinite;
+        }
+        
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .powerup-indicator.speed { background: #48dbfb; border-color: #0abde3; }
+        .powerup-indicator.slow { background: #ff9ff3; border-color: #f368e0; }
+        .powerup-indicator.magnet { background: #feca57; border-color: #ff9f43; }
+        .powerup-indicator.shield { background: #1dd1a1; border-color: #10ac84; }
         
         /* Плавающий джойстик */
         #floatingJoystick {
@@ -128,7 +290,8 @@
             background: rgba(255, 255, 255, 0.15);
             border-radius: 50%;
             border: 3px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
         
         .joystick-handle {
@@ -142,98 +305,327 @@
             left: 50%;
             transform: translate(-50%, -50%);
             transition: transform 0.1s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
         .action-buttons {
             position: absolute;
-            right: 20px;
-            bottom: 20px;
+            right: 25px;
+            bottom: 25px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
             pointer-events: auto;
         }
         
         .action-btn {
-            width: 80px;
-            height: 80px;
+            width: 85px;
+            height: 85px;
             border-radius: 50%;
             border: none;
-            background: rgba(255, 255, 255, 0.2);
-            font-size: 1.8em;
+            background: rgba(255, 255, 255, 0.15);
+            font-size: 2em;
             cursor: pointer;
             border: 3px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-btn:active {
+            transform: scale(0.9);
+            background: rgba(255, 255, 255, 0.25);
         }
         
         .barrier-active {
             background: rgba(254, 202, 87, 0.3) !important;
             border: 3px solid #feca57 !important;
+            box-shadow: 0 0 30px #feca57;
+            animation: barrierPulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes barrierPulse {
+            0%, 100% { box-shadow: 0 0 20px #feca57; }
+            50% { box-shadow: 0 0 40px #feca57; }
         }
         
         .controls-hint {
             position: absolute;
-            bottom: 120px;
+            bottom: 140px;
             left: 0;
             right: 0;
             text-align: center;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95em;
             pointer-events: none;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            backdrop-filter: blur(10px);
         }
         
-        .debug-info {
+        .combo-display {
             position: absolute;
-            top: 50px;
-            left: 10px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            color: #feca57;
+            font-weight: bold;
+            text-shadow: 0 0 30px rgba(254, 202, 87, 0.8);
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.5s ease;
+            z-index: 1000;
+        }
+        
+        .mission-popup {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
             color: white;
-            font-size: 0.8em;
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 1.1em;
             pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+            text-align: center;
+            border: 2px solid #feca57;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
         
-        .cooldown-indicator {
+        .upgrade-notification {
             position: absolute;
-            top: 70px;
-            left: 10px;
-            color: #ff6b6b;
-            font-size: 0.8em;
+            bottom: 220px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(76, 175, 80, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 1em;
             pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 5px 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .ability-cooldown {
+            position: absolute;
+            bottom: 120px;
+            right: 25px;
+            color: #ff6b6b;
+            font-size: 0.85em;
+            pointer-events: none;
+            text-align: center;
+            width: 85px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .xp-bar {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .xp-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #48dbfb, #0abde3);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .xp-progress::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: xpShine 2s infinite;
+        }
+        
+        @keyframes xpShine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        /* Анимации */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px #feca57; }
+            50% { box-shadow: 0 0 40px #feca57; }
+        }
+        
+        .pulse { animation: pulse 2s infinite; }
+        .float { animation: float 3s ease-in-out infinite; }
+        .glow { animation: glow 2s ease-in-out infinite; }
+        
+        /* Эффекты частиц */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 100;
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
+        <!-- Анимированный фон -->
+        <div class="menu-bg"></div>
+        
         <div id="loadingScreen" class="screen">
             <div class="menu-content">
-                <h1>SOSKA CHASE</h1>
-                <div id="loadingStatus">Загрузка...</div>
-                <button class="menu-btn" onclick="skipLoading()">Пропустить загрузку</button>
+                <h1>🔥 SOSKA CHASE ULTIMATE</h1>
+                <div id="loadingStatus" style="margin: 20px 0; font-size: 1.1em;">Загрузка эпических возможностей...</div>
+                <div style="width: 300px; height: 12px; background: rgba(255,255,255,0.2); border-radius: 6px; margin: 30px auto; overflow: hidden;">
+                    <div id="loadingProgress" style="width: 0%; height: 100%; background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb); border-radius: 6px; transition: width 0.3s;"></div>
+                </div>
+                <button class="menu-btn pulse" onclick="skipLoading()">🚀 Пропустить загрузку</button>
             </div>
         </div>
 
-        <div id="mainMenu" class="screen hidden">
+        <div id="mainMenu" class="screen">
             <div class="menu-content">
-                <h1>SOSKA CHASE</h1>
-                <p style="margin-bottom: 1em; color: rgba(255,255,255,0.8);">Беги от соски 69!</p>
-                <button class="menu-btn" onclick="startGame()">Начать игру</button>
-                <button class="menu-btn" onclick="showInstructions()">Как играть</button>
+                <h1>🔥 SOSKA CHASE ULTIMATE</h1>
+                <p style="margin-bottom: 1.5em; color: rgba(255,255,255,0.9); line-height: 1.5; font-size: 1.1em;">
+                    🎮 Беги от легендарной соски 69!<br>
+                    ⚡ Собирай улучшения, выполняй миссии<br>
+                    🏆 Становись самым быстрым бегуном!
+                </p>
+                <button class="menu-btn pulse glow" onclick="startGame()">🎮 Начать игру</button>
+                <button class="menu-btn special-btn" onclick="showUpgrades()">⭐ Улучшения</button>
+                <button class="menu-btn premium-btn" onclick="showMissions()">🎯 Миссии</button>
+                <button class="menu-btn" onclick="showInstructions()">❓ Обучение</button>
+                
+                <div style="margin-top: 2em; padding: 1.5em; background: rgba(0,0,0,0.3); border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div class="stat-item">
+                        <span>🏆 Рекорд: </span>
+                        <span id="menuBestTime" class="stat-value">00:00</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>⭐ Уровень: </span>
+                        <span id="menuLevel" class="stat-value">1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>🎯 Очков улучшений: </span>
+                        <span id="menuPoints" class="stat-value">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="upgradesScreen" class="screen hidden">
+            <div class="menu-content">
+                <h1>⭐ СИСТЕМА УЛУЧШЕНИЙ</h1>
+                <div style="text-align: left; margin: 1.5em 0; max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                    <div class="upgrade-item" style="background: rgba(255,255,255,0.1); padding: 1.5em; margin: 1em 0; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                        <h3 style="color: #48dbfb; margin-bottom: 0.5em;">⚡ Скорость бега</h3>
+                        <p style="color: rgba(255,255,255,0.8); margin-bottom: 1em;">Увеличивает базовую скорость на 25% за уровень</p>
+                        <div class="stat-item">
+                            <span>Уровень: </span>
+                            <span id="speedLevel" class="stat-value">1</span>
+                        </div>
+                        <button class="menu-btn" onclick="buyUpgrade('speed')" style="width: auto; padding: 0.8em 1.5em; font-size: 0.95em; margin: 0.5em 0;">🛒 Купить (15 очков)</button>
+                    </div>
+                    
+                    <div class="upgrade-item" style="background: rgba(255,255,255,0.1); padding: 1.5em; margin: 1em 0; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                        <h3 style="color: #feca57; margin-bottom: 0.5em;">🛡️ Дополнительный барьер</h3>
+                        <p style="color: rgba(255,255,255,0.8); margin-bottom: 1em;">+1 максимальное количество барьеров за уровень</p>
+                        <div class="stat-item">
+                            <span>Уровень: </span>
+                            <span id="barrierLevel" class="stat-value">1</span>
+                        </div>
+                        <button class="menu-btn" onclick="buyUpgrade('barrier')" style="width: auto; padding: 0.8em 1.5em; font-size: 0.95em; margin: 0.5em 0;">🛒 Купить (20 очков)</button>
+                    </div>
+                    
+                    <div class="upgrade-item" style="background: rgba(255,255,255,0.1); padding: 1.5em; margin: 1em 0; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);">
+                        <h3 style="color: #ff9ff3; margin-bottom: 0.5em;">🧲 Магнит для барьеров</h3>
+                        <p style="color: rgba(255,255,255,0.8); margin-bottom: 1em;">Барьеры притягиваются к вам с большего расстояния</p>
+                        <div class="stat-item">
+                            <span>Уровень: </span>
+                            <span id="magnetLevel" class="stat-value">0</span>
+                        </div>
+                        <button class="menu-btn" onclick="buyUpgrade('magnet')" style="width: auto; padding: 0.8em 1.5em; font-size: 0.95em; margin: 0.5em 0;">🛒 Купить (30 очков)</button>
+                    </div>
+                </div>
+                <div class="stat-item" style="justify-content: center; margin-top: 1.5em; font-size: 1.3em; background: rgba(254, 202, 87, 0.2); padding: 1em; border-radius: 10px;">
+                    <span>🎯 Доступно очков: </span>
+                    <span id="upgradePoints" class="stat-value">0</span>
+                </div>
+                <button class="menu-btn" onclick="showMainMenu()">← Назад в меню</button>
+            </div>
+        </div>
+
+        <div id="missionsScreen" class="screen hidden">
+            <div class="menu-content">
+                <h1>🎯 АКТИВНЫЕ МИССИИ</h1>
+                <div style="text-align: left; margin: 1.5em 0; max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                    <div id="missionsList">
+                        <!-- Миссии будут добавляться через JS -->
+                    </div>
+                </div>
+                <button class="menu-btn" onclick="showMainMenu()">← Назад в меню</button>
             </div>
         </div>
 
         <div id="instructionsScreen" class="screen hidden">
             <div class="menu-content">
-                <h1>КАК ИГРАТЬ</h1>
-                <div style="text-align: left; margin: 1em 0;">
-                    <p>• Касайтесь ЛЕВОЙ части экрана для движения</p>
-                    <p>• Перетаскивайте палец для управления</p>
-                    <p>• Джойстик появляется в месте касания</p>
-                    <p>• Нажимайте правую кнопку для активации барьера</p>
-                    <p>• Барьер автоматически защищает при столкновении</p>
-                    <p>• После слома барьера у вас есть 1 секунда</p>
-                    <p>• Собирайте желтые щиты для защиты</p>
-                    <p>• Бегите от соски 69!</p>
+                <h1>🎮 ОБУЧЕНИЕ</h1>
+                <div style="text-align: left; margin: 1.5em 0; line-height: 1.7; font-size: 1.05em;">
+                    <div style="background: rgba(255,255,255,0.1); padding: 1.5em; border-radius: 15px; margin-bottom: 1em;">
+                        <p>🎯 <strong>Цель игры:</strong> Убегайте от соски 69 как можно дольше!</p>
+                        <p>👆 <strong>Управление:</strong> Касайтесь левой части экрана - появляется джойстик</p>
+                        <p>🛡️ <strong>Барьеры:</strong> Собирайте щиты и активируйте защиту кнопкой справа</p>
+                        <p>⚡ <strong>Улучшения:</strong> Собирайте бонусы для особых способностей</p>
+                    </div>
+                    
+                    <div style="background: rgba(254, 202, 87, 0.2); padding: 1.5em; border-radius: 15px; margin-bottom: 1em;">
+                        <h3 style="color: #feca57; margin-bottom: 0.8em;">🌟 СЕКРЕТНЫЕ ВОЗМОЖНОСТИ:</h3>
+                        <p>• 🔥 Комбо за сбор нескольких барьеров подряд</p>
+                        <p>• ⭐ Редкие легендарные улучшения</p>
+                        <p>• 🏆 Специальные достижения и награды</p>
+                        <p>• 📈 Прокачка характеристик</p>
+                    </div>
+                    
+                    <div style="background: rgba(72, 219, 251, 0.2); padding: 1.5em; border-radius: 15px;">
+                        <h3 style="color: #48dbfb; margin-bottom: 0.8em;">💡 СОВЕТЫ ПРОФЕССИОНАЛА:</h3>
+                        <p>• Двигайтесь по кругу - сложнее догнать</p>
+                        <p>• Собирайте барьеры заранее</p>
+                        <p>• Используйте улучшения в критических ситуациях</p>
+                        <p>• Следите за перезарядкой защиты</p>
+                    </div>
                 </div>
-                <button class="menu-btn" onclick="showMainMenu()">Назад</button>
+                <button class="menu-btn pulse" onclick="showMainMenu()">🎮 Понятно, начать играть!</button>
             </div>
         </div>
 
@@ -241,24 +633,47 @@
             <canvas id="gameCanvas"></canvas>
             
             <div id="gameHUD">
+                <!-- Полоса опыта -->
+                <div class="xp-bar">
+                    <div class="xp-progress" id="xpProgress" style="width: 0%"></div>
+                </div>
+                
                 <div class="hud-top">
-                    <div class="score-display">
-                        <span>Время: </span>
-                        <span id="timer">0</span>
+                    <div class="stats-container">
+                        <div class="stat-item">
+                            <span>⏱️ Время: </span>
+                            <span id="timer" class="stat-value">00:00</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>🎯 Дистанция: </span>
+                            <span id="distance" class="stat_value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>⭐ Уровень: </span>
+                            <span id="level" class="stat-value">1</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>🔥 Комбо: </span>
+                            <span id="combo" class="stat-value">x1</span>
+                        </div>
                     </div>
-                    <div class="health-indicators" id="healthIndicators">
-                        <div class="health-indicator"></div>
-                        <div class="health-indicator"></div>
-                        <div class="health-indicator"></div>
+                    
+                    <div>
+                        <div class="health-indicators" id="healthIndicators">
+                            <div class="health-indicator"></div>
+                            <div class="health-indicator"></div>
+                            <div class="health-indicator"></div>
+                        </div>
+                        <div class="powerup-indicators" id="powerupIndicators">
+                            <!-- Индикаторы улучшений -->
+                        </div>
                     </div>
                 </div>
                 
-                <div class="debug-info" id="debugInfo">
-                    Барьеры: 0 | Защита: НЕТ
-                </div>
-                <div class="cooldown-indicator" id="cooldownInfo">
-                    
-                </div>
+                <!-- Всплывающие сообщения -->
+                <div class="combo-display" id="comboDisplay"></div>
+                <div class="mission-popup" id="missionPopup"></div>
+                <div class="upgrade-notification" id="upgradeNotification"></div>
                 
                 <!-- Плавающий джойстик -->
                 <div id="floatingJoystick">
@@ -267,67 +682,192 @@
                 </div>
                 
                 <div class="controls-hint">
-                    Касайтесь левой части экрана для движения
+                    👆 Касайтесь левой части экрана для движения
                 </div>
                 
                 <div class="action-buttons">
                     <button class="action-btn" id="useBarrier">🛡️</button>
+                    <div class="ability-cooldown" id="abilityCooldown"></div>
                 </div>
             </div>
         </div>
 
         <div id="gameOverScreen" class="screen hidden">
             <div class="menu-content">
-                <h1>GAME OVER</h1>
-                <p>Соска 69 догнала вас!</p>
-                <p>Время: <span id="finalTime">0</span></p>
-                <p>Собрано барьеров: <span id="finalBarriers">0</span></p>
-                <button class="menu-btn" onclick="restartGame()">Играть снова</button>
-                <button class="menu-btn" onclick="showMainMenu()">В меню</button>
+                <h1>💀 GAME OVER</h1>
+                <p style="font-size: 1.3em; margin-bottom: 1.5em; color: #ff6b6b;">Соска 69 догнала вас!</p>
+                
+                <div style="background: rgba(255,255,255,0.1); padding: 2em; border-radius: 20px; margin: 1.5em 0; border: 1px solid rgba(255,255,255,0.1);">
+                    <div class="stat-item" style="font-size: 1.2em; margin: 1em 0;">
+                        <span>⏱️ Время выживания: </span>
+                        <span id="finalTime" class="stat-value">00:00</span>
+                    </div>
+                    <div class="stat-item" style="margin: 1em 0;">
+                        <span>🛡️ Собрано барьеров: </span>
+                        <span id="finalBarriers" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item" style="margin: 1em 0;">
+                        <span>🎯 Пройдено дистанции: </span>
+                        <span id="finalDistance" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item" style="margin: 1em 0;">
+                        <span>⭐ Получено опыта: </span>
+                        <span id="finalXP" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item" style="margin: 1em 0; color: #feca57; font-size: 1.1em;">
+                        <span>🏆 Новые очки улучшений: </span>
+                        <span id="newUpgradePoints" class="stat-value">0</span>
+                    </div>
+                </div>
+
+                <div id="achievementsEarned" style="margin: 1.5em 0;">
+                    <!-- Достижения -->
+                </div>
+                
+                <button class="menu-btn pulse glow" onclick="restartGame()">🔄 Играть снова</button>
+                <button class="menu-btn" onclick="showMainMenu()">📋 В главное меню</button>
             </div>
         </div>
     </div>
 
     <script>
+        // ==================== КОНСТАНТЫ И ПЕРЕМЕННЫЕ ====================
+        const GameConstants = {
+            PLAYER_SIZE: 18,
+            ENEMY_SIZE: 35,
+            BARRIER_SIZE: 12,
+            POWERUP_SIZE: 16,
+            PLAYER_SPEED: 4.5,
+            BARRIER_SPAWN_RATE: 400,
+            POWERUP_SPAWN_RATE: 800,
+            MAX_BARRIERS: 6,
+            MAX_POWERUPS: 4,
+            JOYSTICK_RADIUS: 80,
+            BARRIER_COOLDOWN: 60,
+            COMBO_TIMEOUT: 180,
+            LEVEL_UP_XP: 100,
+            MAGNET_RANGE: 200
+        };
+
         // Глобальные переменные
         let gameTime = 0;
         let gameInterval = null;
-        let player = { 
-            x: 0, 
-            y: 0, 
-            barriers: 0,
-            hasActiveBarrier: false,
-            barrierCooldown: 0,
-            size: 15,
-            speed: 4,
-            color: '#48dbfb'
+        let player = {
+            x: 0, y: 0, barriers: 0, hasActiveBarrier: false, barrierCooldown: 0,
+            speed: GameConstants.PLAYER_SPEED, maxBarriers: 3, level: 1, xp: 0,
+            powerups: { speed: 0, slow: 0, magnet: 0, shield: 0 }, combo: 1, comboTimeout: 0,
+            totalDistance: 0, upgrades: { speed: 1, barrier: 1, magnet: 0 },
+            upgradePoints: 0, isInvulnerable: false, color: '#48dbfb', size: GameConstants.PLAYER_SIZE
         };
+        
         let enemy = { 
-            x: 0, 
-            y: 0, 
-            size: 30,
-            speed: 2,
-            color: '#ff6b6b'
+            x: 0, y: 0, speed: 2.2, baseSpeed: 2.2,
+            size: GameConstants.ENEMY_SIZE, color: '#ff6b6b'
         };
+        
         let barriers = [];
-        let barrierSpawnTimer = 0;
+        let powerups = [];
+        let particles = [];
         let isJoystickActive = false;
-        let joystickStartX = 0;
-        let joystickStartY = 0;
+        let barrierSpawnTimer = 0;
+        let powerupSpawnTimer = 0;
         
-        // Константы игры
-        const GameConstants = {
-            PLAYER_SIZE: 15,
-            ENEMY_SIZE: 30,
-            BARRIER_SIZE: 10,
-            PLAYER_SPEED: 4,
-            BARRIER_SPAWN_RATE: 600,
-            MAX_BARRIERS: 8,
-            JOYSTICK_RADIUS: 80,
-            BARRIER_COOLDOWN: 60 // 1 секунда при 60 FPS
-        };
-        
-        // Функции навигации
+        // Система миссий
+        let missions = [
+            { 
+                id: 'survive_30', 
+                name: 'Выжить 30 секунд', 
+                description: 'Продержаться против соски 69 целых 30 секунд!',
+                target: 30, 
+                completed: false, 
+                reward: 10,
+                type: 'time'
+            },
+            { 
+                id: 'collect_5', 
+                name: 'Собрать 5 барьеров', 
+                description: 'Соберите 5 защитных барьеров за одну игру',
+                target: 5, 
+                completed: false, 
+                reward: 15,
+                type: 'collect'
+            },
+            { 
+                id: 'combo_3', 
+                name: 'Комбо x3', 
+                description: 'Соберите 3 барьера подряд без перерыва',
+                target: 3, 
+                completed: false, 
+                reward: 20,
+                type: 'combo'
+            },
+            { 
+                id: 'distance_500', 
+                name: 'Пробежать 500 единиц', 
+                description: 'Преодолейте дистанцию в 500 единиц',
+                target: 500, 
+                completed: false, 
+                reward: 25,
+                type: 'distance'
+            },
+            { 
+                id: 'use_barriers_3', 
+                name: 'Использовать 3 барьера', 
+                description: 'Активируйте защиту 3 раза за игру',
+                target: 3, 
+                completed: false, 
+                reward: 18,
+                type: 'ability'
+            }
+        ];
+
+        // ==================== СИСТЕМА СОХРАНЕНИЯ ====================
+        function saveGame() {
+            const saveData = {
+                player: {
+                    level: player.level,
+                    xp: player.xp,
+                    upgrades: player.upgrades,
+                    upgradePoints: player.upgradePoints
+                },
+                missions: missions,
+                bestTime: Math.max(gameTime, getBestTime() || 0),
+                totalUpgradePoints: player.upgradePoints + (getTotalUpgradePoints() || 0)
+            };
+            localStorage.setItem('soskaChaseUltimateSave', JSON.stringify(saveData));
+        }
+
+        function loadGame() {
+            const saveData = JSON.parse(localStorage.getItem('soskaChaseUltimateSave'));
+            if (saveData) {
+                player.level = saveData.player?.level || 1;
+                player.xp = saveData.player?.xp || 0;
+                player.upgrades = saveData.player?.upgrades || { speed: 1, barrier: 1, magnet: 0 };
+                player.upgradePoints = saveData.player?.upgradePoints || 0;
+                missions = saveData.missions || missions;
+                
+                // Применяем улучшения
+                applyUpgrades();
+                updateMenuStats();
+            }
+        }
+
+        function getBestTime() {
+            const saveData = JSON.parse(localStorage.getItem('soskaChaseUltimateSave'));
+            return saveData?.bestTime || 0;
+        }
+
+        function getTotalUpgradePoints() {
+            const saveData = JSON.parse(localStorage.getItem('soskaChaseUltimateSave'));
+            return saveData?.totalUpgradePoints || 0;
+        }
+
+        function applyUpgrades() {
+            player.speed = GameConstants.PLAYER_SPEED * (1 + (player.upgrades.speed - 1) * 0.25);
+            player.maxBarriers = 2 + player.upgrades.barrier;
+        }
+
+        // ==================== ФУНКЦИИ НАВИГАЦИИ ====================
         function skipLoading() {
             showMainMenu();
         }
@@ -335,6 +875,19 @@
         function showMainMenu() {
             hideAllScreens();
             document.getElementById('mainMenu').classList.remove('hidden');
+            updateMenuStats();
+        }
+        
+        function showUpgrades() {
+            hideAllScreens();
+            document.getElementById('upgradesScreen').classList.remove('hidden');
+            updateUpgradesDisplay();
+        }
+        
+        function showMissions() {
+            hideAllScreens();
+            document.getElementById('missionsScreen').classList.remove('hidden');
+            updateMissionsDisplay();
         }
         
         function showInstructions() {
@@ -347,17 +900,15 @@
                 screen.classList.add('hidden');
             });
         }
-        
-        // Инициализация игры
+
+        // ==================== ИНИЦИАЛИЗАЦИЯ ИГРЫ ====================
         function startGame() {
-            console.log('Starting game...');
             hideAllScreens();
             document.getElementById('gameScreen').classList.remove('hidden');
-            
             initializeGame();
             startGameLoop();
         }
-        
+
         function initializeGame() {
             const canvas = document.getElementById('gameCanvas');
             const ctx = canvas.getContext('2d');
@@ -365,63 +916,59 @@
             // Установка размеров canvas
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            
-            // Инициализация игровых объектов
-            player = {
-                x: canvas.width / 2,
-                y: canvas.height / 2,
-                size: GameConstants.PLAYER_SIZE,
-                color: '#48dbfb',
-                barriers: 0,
-                speed: GameConstants.PLAYER_SPEED,
-                hasActiveBarrier: false,
-                barrierCooldown: 0
-            };
-            
-            enemy = {
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                size: GameConstants.ENEMY_SIZE,
-                color: '#ff6b6b',
-                speed: 2
-            };
-            
+
+            // Сброс состояния игры
+            gameTime = 0;
+            player.x = canvas.width / 2;
+            player.y = canvas.height / 2;
+            player.barriers = 0;
+            player.hasActiveBarrier = false;
+            player.barrierCooldown = 0;
+            player.combo = 1;
+            player.comboTimeout = 0;
+            player.totalDistance = 0;
+            player.xp = 0;
+            player.isInvulnerable = false;
+
+            // Сброс улучшений (только на время игры)
+            player.powerups = { speed: 0, slow: 0, magnet: 0, shield: 0 };
+
+            enemy.x = Math.random() * canvas.width;
+            enemy.y = Math.random() * canvas.height;
+            enemy.speed = enemy.baseSpeed;
+
             barriers = [];
+            powerups = [];
+            particles = [];
             barrierSpawnTimer = 0;
-            
-            // Инициализация управления
+            powerupSpawnTimer = 0;
+
             initControls();
-            
-            console.log('Game initialized');
-            updateDebugInfo();
+            updateHUD();
+            updateXPBar();
         }
-        
+
+        // ==================== СИСТЕМА УПРАВЛЕНИЯ ====================
         function initControls() {
             const canvas = document.getElementById('gameCanvas');
             const barrierBtn = document.getElementById('useBarrier');
-            const joystick = document.getElementById('floatingJoystick');
-            const joystickHandle = document.querySelector('.joystick-handle');
-            
             let currentTouchId = null;
-            let moveX = 0;
-            let moveY = 0;
-            
-            // Touch события для всего экрана
+            let moveX = 0, moveY = 0;
+
+            // Touch события
             canvas.addEventListener('touchstart', handleTouchStart);
             canvas.addEventListener('touchmove', handleTouchMove);
             canvas.addEventListener('touchend', handleTouchEnd);
-            canvas.addEventListener('touchcancel', handleTouchEnd);
-            
-            // Mouse события для десктопа
+
+            // Mouse события
             canvas.addEventListener('mousedown', handleMouseDown);
             canvas.addEventListener('mousemove', handleMouseMove);
             canvas.addEventListener('mouseup', handleMouseUp);
-            canvas.addEventListener('mouseleave', handleMouseUp);
-            
+
             // Кнопка барьера
             barrierBtn.addEventListener('click', useBarrier);
             barrierBtn.addEventListener('touchstart', useBarrier);
-            
+
             function handleTouchStart(e) {
                 e.preventDefault();
                 const touch = e.touches[0];
@@ -429,81 +976,61 @@
                 const x = touch.clientX - rect.left;
                 const y = touch.clientY - rect.top;
                 
-                // Активируем джойстик только в левой половине экрана
                 if (x < canvas.width / 2) {
                     activateJoystick(x, y);
                     currentTouchId = touch.identifier;
                 }
             }
-            
+
             function handleTouchMove(e) {
                 if (!isJoystickActive) return;
-                
                 e.preventDefault();
                 const touch = Array.from(e.touches).find(t => t.identifier === currentTouchId);
-                if (!touch) return;
-                
-                const rect = canvas.getBoundingClientRect();
-                const x = touch.clientX - rect.left;
-                const y = touch.clientY - rect.top;
-                
-                updateJoystick(x, y);
+                if (touch) {
+                    const rect = canvas.getBoundingClientRect();
+                    updateJoystick(touch.clientX - rect.left, touch.clientY - rect.top);
+                }
             }
-            
-            function handleTouchEnd(e) {
-                if (!isJoystickActive) return;
-                
-                e.preventDefault();
-                deactivateJoystick();
+
+            function handleTouchEnd() {
+                if (isJoystickActive) deactivateJoystick();
                 currentTouchId = null;
             }
-            
+
             function handleMouseDown(e) {
                 const rect = canvas.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-                
-                // Активируем джойстик только в левой половине экрана
-                if (x < canvas.width / 2) {
-                    activateJoystick(x, y);
-                }
+                if (x < canvas.width / 2) activateJoystick(x, y);
             }
-            
+
             function handleMouseMove(e) {
                 if (!isJoystickActive) return;
-                
                 const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                updateJoystick(x, y);
+                updateJoystick(e.clientX - rect.left, e.clientY - rect.top);
             }
-            
+
             function handleMouseUp() {
-                if (!isJoystickActive) return;
-                deactivateJoystick();
+                if (isJoystickActive) deactivateJoystick();
             }
-            
+
             function activateJoystick(x, y) {
                 isJoystickActive = true;
-                joystickStartX = x;
-                joystickStartY = y;
-                
-                // Позиционируем джойстик
+                const joystick = document.getElementById('floatingJoystick');
                 joystick.style.left = (x - 90) + 'px';
                 joystick.style.top = (y - 90) + 'px';
                 joystick.style.display = 'block';
-                
-                moveX = 0;
-                moveY = 0;
-                updateJoystickHandle(0, 0);
+                moveX = 0; moveY = 0;
             }
-            
+
             function updateJoystick(x, y) {
-                const deltaX = x - joystickStartX;
-                const deltaY = y - joystickStartY;
+                const joystick = document.getElementById('floatingJoystick');
+                const baseX = parseInt(joystick.style.left) + 90;
+                const baseY = parseInt(joystick.style.top) + 90;
                 
-                // Ограничиваем движение ручки джойстика
+                const deltaX = x - baseX;
+                const deltaY = y - baseY;
+                
                 const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
                 const maxDistance = GameConstants.JOYSTICK_RADIUS;
                 
@@ -511,233 +1038,588 @@
                     const scale = maxDistance / distance;
                     moveX = (deltaX * scale) / maxDistance;
                     moveY = (deltaY * scale) / maxDistance;
-                    updateJoystickHandle(deltaX * scale, deltaY * scale);
                 } else {
                     moveX = deltaX / maxDistance;
                     moveY = deltaY / maxDistance;
-                    updateJoystickHandle(deltaX, deltaY);
                 }
+                
+                const handle = document.querySelector('.joystick-handle');
+                const handleX = Math.min(maxDistance, Math.max(-maxDistance, deltaX));
+                const handleY = Math.min(maxDistance, Math.max(-maxDistance, deltaY));
+                handle.style.transform = `translate(calc(-50% + ${handleX}px), calc(-50% + ${handleY}px))`;
             }
-            
-            function updateJoystickHandle(x, y) {
-                const joystickHandle = document.querySelector('.joystick-handle');
-                joystickHandle.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
-            }
-            
+
             function deactivateJoystick() {
                 isJoystickActive = false;
-                moveX = 0;
-                moveY = 0;
-                
-                const joystick = document.getElementById('floatingJoystick');
-                joystick.style.display = 'none';
-                
-                const joystickHandle = document.querySelector('.joystick-handle');
-                joystickHandle.style.transform = 'translate(-50%, -50%)';
+                moveX = 0; moveY = 0;
+                document.getElementById('floatingJoystick').style.display = 'none';
+                document.querySelector('.joystick-handle').style.transform = 'translate(-50%, -50%)';
             }
-            
-            // Сохраняем состояние движения для игрового цикла
-            window.gameMoveState = { 
-                isMoving: isJoystickActive, 
-                moveX: moveX, 
-                moveY: moveY 
-            };
-            
+
+            // Обновление состояния движения
+            window.gameMoveState = { isMoving: false, moveX: 0, moveY: 0 };
             setInterval(() => {
-                window.gameMoveState = { 
-                    isMoving: isJoystickActive, 
-                    moveX: moveX, 
-                    moveY: moveY 
-                };
+                window.gameMoveState = { isMoving: isJoystickActive, moveX, moveY };
             }, 16);
         }
-        
+
         function useBarrier() {
             if (player.barriers > 0 && !player.hasActiveBarrier && player.barrierCooldown === 0) {
                 player.barriers--;
                 player.hasActiveBarrier = true;
-                updateHealthDisplay();
+                updateHUD();
                 
                 const barrierBtn = document.getElementById('useBarrier');
                 barrierBtn.classList.add('barrier-active');
                 
-                console.log('Барьер активирован!');
-                updateDebugInfo();
+                // Эффект активации
+                createParticles(player.x, player.y, 25, '#feca57');
+                showComboEffect('🛡️ ЗАЩИТА АКТИВИРОВАНА!');
             }
         }
-        
-        function updateHealthDisplay() {
-            const indicators = document.querySelectorAll('.health-indicator');
-            indicators.forEach((indicator, index) => {
-                indicator.classList.toggle('active', index < player.barriers);
+
+        // ==================== СИСТЕМА ЧАСТИЦ ====================
+        function createParticles(x, y, count, color) {
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 10,
+                    vy: (Math.random() - 0.5) * 10,
+                    life: 1,
+                    color: color || '#ffffff',
+                    size: Math.random() * 6 + 2,
+                    decay: 0.02 + Math.random() * 0.02
+                });
+            }
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= p.decay;
+                p.vx *= 0.92;
+                p.vy *= 0.92;
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawParticles(ctx) {
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
             });
         }
-        
-        function updateDebugInfo() {
-            const debugInfo = document.getElementById('debugInfo');
-            const barrierStatus = player.hasActiveBarrier ? 'АКТИВНА' : 'НЕТ';
-            debugInfo.textContent = `Барьеры: ${player.barriers} | Защита: ${barrierStatus}`;
+
+        // ==================== СИСТЕМА УЛУЧШЕНИЙ ====================
+        function spawnPowerup() {
+            const canvas = document.getElementById('gameCanvas');
+            const types = ['speed', 'slow', 'magnet', 'shield'];
+            const weights = [0.35, 0.25, 0.25, 0.15]; // Вероятности появления
+            const type = getWeightedRandom(types, weights);
             
-            const cooldownInfo = document.getElementById('cooldownInfo');
-            if (player.barrierCooldown > 0) {
-                const secondsLeft = (player.barrierCooldown / 60).toFixed(1);
-                cooldownInfo.textContent = `Перезарядка: ${secondsLeft}с`;
-                cooldownInfo.style.display = 'block';
-            } else {
-                cooldownInfo.style.display = 'none';
+            powerups.push({
+                x: Math.random() * (canvas.width - 60) + 30,
+                y: Math.random() * (canvas.height - 60) + 30,
+                type: type,
+                size: GameConstants.POWERUP_SIZE,
+                color: getPowerupColor(type),
+                rotation: 0
+            });
+        }
+
+        function getWeightedRandom(items, weights) {
+            const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+            let random = Math.random() * totalWeight;
+            
+            for (let i = 0; i < items.length; i++) {
+                random -= weights[i];
+                if (random <= 0) return items[i];
+            }
+            return items[items.length - 1];
+        }
+
+        function getPowerupColor(type) {
+            const colors = {
+                speed: '#48dbfb',
+                slow: '#ff9ff3', 
+                magnet: '#feca57',
+                shield: '#1dd1a1'
+            };
+            return colors[type] || '#ffffff';
+        }
+
+        function getPowerupName(type) {
+            const names = {
+                speed: '⚡ СКОРОСТЬ',
+                slow: '🌀 ЗАМЕДЛЕНИЕ',
+                magnet: '🧲 МАГНИТ',
+                shield: '💎 ЩИТ'
+            };
+            return names[type] || 'УЛУЧШЕНИЕ';
+        }
+
+        function collectPowerups() {
+            for (let i = powerups.length - 1; i >= 0; i--) {
+                const p = powerups[i];
+                const dist = Math.sqrt((player.x - p.x) ** 2 + (player.y - p.y) ** 2);
+                
+                if (dist < player.size + p.size) {
+                    player.powerups[p.type] += 300; // 5 секунд
+                    
+                    // Специальные эффекты для разных улучшений
+                    switch(p.type) {
+                        case 'speed':
+                            showUpgradeNotification('⚡ СКОРОСТЬ ПОВЫШЕНА!');
+                            createParticles(p.x, p.y, 20, '#48dbfb');
+                            break;
+                        case 'slow':
+                            showUpgradeNotification('🌀 ВРАГ ЗАМЕДЛЕН!');
+                            createParticles(p.x, p.y, 20, '#ff9ff3');
+                            break;
+                        case 'magnet':
+                            showUpgradeNotification('🧲 МАГНИТ АКТИВИРОВАН!');
+                            createParticles(p.x, p.y, 20, '#feca57');
+                            break;
+                        case 'shield':
+                            showUpgradeNotification('💎 ДОПОЛНИТЕЛЬНАЯ ЗАЩИТА!');
+                            createParticles(p.x, p.y, 25, '#1dd1a1');
+                            player.barriers = Math.min(player.barriers + 1, player.maxBarriers);
+                            updateHUD();
+                            break;
+                    }
+                    
+                    powerups.splice(i, 1);
+                }
             }
         }
-        
-        // Игровой цикл
-        function startGameLoop() {
-            gameTime = 0;
-            barrierSpawnTimer = 0;
-            updateTimer();
+
+        function updatePowerups() {
+            // Магнит для барьеров
+            if (player.powerups.magnet > 0 || player.upgrades.magnet > 0) {
+                const magnetStrength = player.upgrades.magnet > 0 ? 0.4 : 0.2;
+                for (let i = barriers.length - 1; i >= 0; i--) {
+                    const b = barriers[i];
+                    const dx = player.x - b.x;
+                    const dy = player.y - b.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < GameConstants.MAGNET_RANGE) {
+                        const force = magnetStrength * (1 - dist / GameConstants.MAGNET_RANGE);
+                        b.x += (dx / dist) * force;
+                        b.y += (dy / dist) * force;
+                    }
+                }
+            }
+
+            // Уменьшение времени улучшений
+            for (const type in player.powerups) {
+                if (player.powerups[type] > 0) {
+                    player.powerups[type]--;
+                }
+            }
+        }
+
+        // ==================== СИСТЕМА МИССИЙ ====================
+        function checkMissions() {
+            let completedCount = 0;
             
+            missions.forEach(mission => {
+                if (mission.completed) {
+                    completedCount++;
+                    return;
+                }
+                
+                let progress = 0;
+                switch (mission.id) {
+                    case 'survive_30': progress = gameTime; break;
+                    case 'collect_5': progress = player.barriers; break;
+                    case 'combo_3': progress = player.combo; break;
+                    case 'distance_500': progress = player.totalDistance; break;
+                    case 'use_barriers_3': 
+                        // Для этой миссии нужна отдельная логика подсчета
+                        progress = mission.currentProgress || 0;
+                        break;
+                }
+                
+                if (progress >= mission.target) {
+                    mission.completed = true;
+                    player.upgradePoints += mission.reward;
+                    showMissionComplete(mission.name, mission.reward);
+                    saveGame();
+                    updateMenuStats();
+                }
+            });
+
+            // Проверка на выполнение всех миссий
+            if (completedCount === missions.length) {
+                showMissionComplete('ВСЕ МИССИИ ВЫПОЛНЕНЫ!', 50);
+            }
+        }
+
+        function updateMissionsDisplay() {
+            const missionsList = document.getElementById('missionsList');
+            missionsList.innerHTML = '';
+            
+            missions.forEach(mission => {
+                const missionElement = document.createElement('div');
+                missionElement.style.background = mission.completed ? 
+                    'rgba(76, 175, 80, 0.2)' : 'rgba(255,255,255,0.1)';
+                missionElement.style.padding = '1.2em';
+                missionElement.style.margin = '0.8em 0';
+                missionElement.style.borderRadius = '12px';
+                missionElement.style.border = mission.completed ? 
+                    '1px solid #4caf50' : '1px solid rgba(255,255,255,0.1)';
+                
+                let progress = 0;
+                switch (mission.id) {
+                    case 'survive_30': progress = gameTime; break;
+                    case 'collect_5': progress = player.barriers; break;
+                    case 'combo_3': progress = player.combo; break;
+                    case 'distance_500': progress = player.totalDistance; break;
+                    case 'use_barriers_3': progress = mission.currentProgress || 0; break;
+                }
+                
+                const progressPercent = Math.min((progress / mission.target) * 100, 100);
+                
+                missionElement.innerHTML = `
+                    <h3 style="color: ${mission.completed ? '#4caf50' : '#feca57'}; margin-bottom: 0.5em;">
+                        ${mission.completed ? '✅' : '🎯'} ${mission.name}
+                    </h3>
+                    <p style="color: rgba(255,255,255,0.8); margin-bottom: 0.8em; font-size: 0.9em;">
+                        ${mission.description}
+                    </p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5em;">
+                        <span style="font-size: 0.9em;">Прогресс: ${Math.floor(progress)}/${mission.target}</span>
+                        <span style="color: #feca57; font-weight: bold;">+${mission.reward} очков</span>
+                    </div>
+                    <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; overflow: hidden;">
+                        <div style="width: ${progressPercent}%; height: 100%; background: linear-gradient(90deg, #feca57, #ff9f43); border-radius: 3px; transition: width 0.3s;"></div>
+                    </div>
+                `;
+                
+                missionsList.appendChild(missionElement);
+            });
+        }
+
+        // ==================== ВИЗУАЛЬНЫЕ ЭФФЕКТЫ ====================
+        function showComboEffect(text) {
+            const comboDisplay = document.getElementById('comboDisplay');
+            comboDisplay.textContent = text;
+            comboDisplay.style.opacity = '1';
+            comboDisplay.style.transform = 'translate(-50%, -50%) scale(1.2)';
+            
+            setTimeout(() => {
+                comboDisplay.style.opacity = '0';
+                comboDisplay.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 1500);
+        }
+
+        function showMissionComplete(name, reward) {
+            const popup = document.getElementById('missionPopup');
+            popup.innerHTML = `
+                <div style="font-size: 1.3em; margin-bottom: 0.5em;">🎉 МИССИЯ ВЫПОЛНЕНА!</div>
+                <div style="font-size: 1.1em; margin-bottom: 0.5em;">${name}</div>
+                <div style="color: #feca57; font-size: 1.2em; font-weight: bold;">+${reward} очков улучшений</div>
+            `;
+            popup.style.opacity = '1';
+            
+            setTimeout(() => {
+                popup.style.opacity = '0';
+            }, 4000);
+        }
+
+        function showUpgradeNotification(text) {
+            const notification = document.getElementById('upgradeNotification');
+            notification.textContent = text;
+            notification.style.opacity = '1';
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+            }, 2500);
+        }
+
+        // ==================== ОСНОВНОЙ ИГРОВОЙ ЦИКЛ ====================
+        function startGameLoop() {
             gameInterval = setInterval(() => {
                 updateGame();
                 renderGame();
                 gameTime += 1/60;
                 
                 if (Math.floor(gameTime) % 1 === 0) {
-                    updateTimer();
+                    updateHUD();
+                    checkMissions();
                 }
             }, 16);
         }
-        
+
         function updateGame() {
             const canvas = document.getElementById('gameCanvas');
             
             // Движение игрока
-            if (window.gameMoveState && window.gameMoveState.isMoving) {
-                player.x += window.gameMoveState.moveX * player.speed;
-                player.y += window.gameMoveState.moveY * player.speed;
+            if (window.gameMoveState.isMoving) {
+                const oldX = player.x, oldY = player.y;
+                
+                // Учет улучшения скорости
+                let currentSpeed = player.speed;
+                if (player.powerups.speed > 0) {
+                    currentSpeed *= 1.5;
+                }
+                
+                player.x += window.gameMoveState.moveX * currentSpeed;
+                player.y += window.gameMoveState.moveY * currentSpeed;
+                player.totalDistance += Math.sqrt((player.x - oldX) ** 2 + (player.y - oldY) ** 2);
                 
                 // Границы
                 player.x = Math.max(player.size, Math.min(player.x, canvas.width - player.size));
                 player.y = Math.max(player.size, Math.min(player.y, canvas.height - player.size));
             }
-            
+
             // Движение врага
             const dx = player.x - enemy.x;
             const dy = player.y - enemy.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
             if (distance > 0) {
-                enemy.x += (dx / distance) * enemy.speed;
-                enemy.y += (dy / distance) * enemy.speed;
+                let currentEnemySpeed = enemy.speed;
+                if (player.powerups.slow > 0) {
+                    currentEnemySpeed *= 0.5;
+                }
+                
+                enemy.x += (dx / distance) * currentEnemySpeed;
+                enemy.y += (dy / distance) * currentEnemySpeed;
             }
-            
-            // Обновление кд барьера
-            if (player.barrierCooldown > 0) {
-                player.barrierCooldown--;
+
+            // Обновление кд и комбо
+            if (player.barrierCooldown > 0) player.barrierCooldown--;
+            if (player.comboTimeout > 0) {
+                player.comboTimeout--;
+            } else if (player.combo > 1) {
+                player.combo = 1;
+                updateHUD();
             }
-            
+
+            // Спавн объектов
+            updateSpawners();
+
+            // Коллекция барьеров и улучшений
+            collectBarriers();
+            collectPowerups();
+
+            // Обновление улучшений
+            updatePowerups();
+
+            // Проверка столкновения
+            checkCollisions();
+
+            // Обновление частиц
+            updateParticles();
+
+            // Увеличение сложности
+            enemy.speed = enemy.baseSpeed + (gameTime / 60) * 0.15;
+        }
+
+        function updateSpawners() {
             // Спавн барьеров
             barrierSpawnTimer++;
             if (barrierSpawnTimer >= GameConstants.BARRIER_SPAWN_RATE && barriers.length < GameConstants.MAX_BARRIERS) {
                 spawnBarrier();
                 barrierSpawnTimer = 0;
             }
-            
-            // Коллекция барьеров
-            for (let i = barriers.length - 1; i >= 0; i--) {
-                const barrier = barriers[i];
-                const dist = Math.sqrt(
-                    Math.pow(player.x - barrier.x, 2) + 
-                    Math.pow(player.y - barrier.y, 2)
-                );
-                
-                if (dist < player.size + barrier.size && player.barriers < 3) {
-                    player.barriers++;
-                    barriers.splice(i, 1);
-                    updateHealthDisplay();
-                    updateDebugInfo();
-                    console.log('Барьер подобран! Всего барьеров:', player.barriers);
-                }
-            }
-            
-            // Проверка столкновения с врагом
-            const distToEnemy = Math.sqrt(
-                Math.pow(player.x - enemy.x, 2) + 
-                Math.pow(player.y - enemy.y, 2)
-            );
-            
-            const collisionDistance = player.size + enemy.size - 5;
-            
-            if (distToEnemy < collisionDistance) {
-                if (player.hasActiveBarrier) {
-                    // Барьер поглощает удар
-                    player.hasActiveBarrier = false;
-                    player.barrierCooldown = GameConstants.BARRIER_COOLDOWN; // 1 секунда кд
-                    
-                    const barrierBtn = document.getElementById('useBarrier');
-                    barrierBtn.classList.remove('barrier-active');
-                    
-                    // Отталкивание врага
-                    const pushForce = 8;
-                    const pushX = (enemy.x - player.x) / distToEnemy;
-                    const pushY = (enemy.y - player.y) / distToEnemy;
-                    enemy.x += pushX * pushForce;
-                    enemy.y += pushY * pushForce;
-                    
-                    // Отталкивание игрока
-                    player.x -= pushX * pushForce;
-                    player.y -= pushY * pushForce;
-                    
-                    console.log('Барьер поглотил удар! Перезарядка 1 секунда');
-                    updateDebugInfo();
-                    
-                } else if (player.barrierCooldown === 0) {
-                    // Нет защиты и нет кд - смерть
-                    gameOver();
-                    return;
-                }
-            }
-            
-            // Увеличение сложности
-            if (gameTime > 30) {
-                enemy.speed = 2 + (gameTime - 30) / 30;
+
+            // Спавн улучшений
+            powerupSpawnTimer++;
+            if (powerupSpawnTimer >= GameConstants.POWERUP_SPAWN_RATE && powerups.length < GameConstants.MAX_POWERUPS) {
+                spawnPowerup();
+                powerupSpawnTimer = 0;
             }
         }
-        
+
         function spawnBarrier() {
             const canvas = document.getElementById('gameCanvas');
             let validPosition = false;
             let attempts = 0;
             
-            while (!validPosition && attempts < 10) {
+            while (!validPosition && attempts < 15) {
                 const x = Math.random() * (canvas.width - GameConstants.BARRIER_SIZE * 2) + GameConstants.BARRIER_SIZE;
                 const y = Math.random() * (canvas.height - GameConstants.BARRIER_SIZE * 2) + GameConstants.BARRIER_SIZE;
                 
                 const distToPlayer = Math.sqrt(Math.pow(x - player.x, 2) + Math.pow(y - player.y, 2));
                 const distToEnemy = Math.sqrt(Math.pow(x - enemy.x, 2) + Math.pow(y - enemy.y, 2));
                 
-                if (distToPlayer > 100 && distToEnemy > 100) {
+                if (distToPlayer > 120 && distToEnemy > 120) {
                     barriers.push({
                         x: x,
                         y: y,
                         size: GameConstants.BARRIER_SIZE,
-                        color: '#feca57'
+                        color: '#feca57',
+                        rotation: 0,
+                        rotationSpeed: (Math.random() - 0.5) * 0.05
                     });
                     validPosition = true;
-                    console.log('Новый барьер создан! Всего барьеров на карте:', barriers.length);
                 }
                 attempts++;
             }
         }
-        
+
+        function collectBarriers() {
+            for (let i = barriers.length - 1; i >= 0; i--) {
+                const barrier = barriers[i];
+                const dist = Math.sqrt((player.x - barrier.x) ** 2 + (player.y - barrier.y) ** 2);
+                
+                if (dist < player.size + barrier.size && player.barriers < player.maxBarriers) {
+                    player.barriers++;
+                    
+                    // Система комбо
+                    player.comboTimeout = GameConstants.COMBO_TIMEOUT;
+                    if (player.comboTimeout > 0) {
+                        player.combo++;
+                        if (player.combo >= 3) {
+                            showComboEffect(`🔥 КОМБО x${player.combo}!`);
+                        }
+                    }
+                    
+                    // Эффект сбора
+                    createParticles(barrier.x, barrier.y, 15, '#feca57');
+                    barriers.splice(i, 1);
+                    
+                    // Награда за сбор
+                    addXP(5 * player.combo);
+                    
+                    updateHUD();
+                    updateHealthDisplay();
+                }
+            }
+        }
+
+        function checkCollisions() {
+            const distToEnemy = Math.sqrt((player.x - enemy.x) ** 2 + (player.y - enemy.y) ** 2);
+            const collisionDistance = player.size + enemy.size - 8;
+            
+            if (distToEnemy < collisionDistance) {
+                if (player.hasActiveBarrier) {
+                    // Барьер поглощает удар
+                    player.hasActiveBarrier = false;
+                    player.barrierCooldown = GameConstants.BARRIER_COOLDOWN;
+                    player.isInvulnerable = true;
+                    
+                    const barrierBtn = document.getElementById('useBarrier');
+                    barrierBtn.classList.remove('barrier-active');
+                    
+                    // Эффект отталкивания
+                    const pushForce = 10;
+                    const pushX = (enemy.x - player.x) / distToEnemy;
+                    const pushY = (enemy.y - player.y) / distToEnemy;
+                    
+                    enemy.x += pushX * pushForce;
+                    enemy.y += pushY * pushForce;
+                    player.x -= pushX * pushForce * 0.7;
+                    player.y -= pushY * pushForce * 0.7;
+                    
+                    // Визуальные эффекты
+                    createParticles(player.x, player.y, 30, '#feca57');
+                    showComboEffect('🛡️ ЗАЩИТА СРАБОТАЛА!');
+                    
+                    // Снимаем неуязвимость через 0.5 секунды
+                    setTimeout(() => {
+                        player.isInvulnerable = false;
+                    }, 500);
+                    
+                } else if (!player.isInvulnerable) {
+                    // Нет защиты - смерть
+                    gameOver();
+                    return;
+                }
+            }
+        }
+
+        // ==================== СИСТЕМА УРОВНЕЙ ====================
+        function addXP(amount) {
+            player.xp += amount;
+            const xpNeeded = player.level * GameConstants.LEVEL_UP_XP;
+            
+            if (player.xp >= xpNeeded) {
+                player.level++;
+                player.xp = 0;
+                player.upgradePoints += 8;
+                
+                showUpgradeNotification(`🎉 УРОВЕНЬ ${player.level}! +8 очков улучшений`);
+                createParticles(player.x, player.y, 40, '#48dbfb');
+                
+                saveGame();
+                updateMenuStats();
+            }
+            
+            updateXPBar();
+        }
+
+        function updateXPBar() {
+            const xpNeeded = player.level * GameConstants.LEVEL_UP_XP;
+            const xpPercent = (player.xp / xpNeeded) * 100;
+            document.getElementById('xpProgress').style.width = xpPercent + '%';
+        }
+
+        // ==================== СИСТЕМА УЛУЧШЕНИЙ ====================
+        function buyUpgrade(type) {
+            const costs = { speed: 15, barrier: 20, magnet: 30 };
+            const cost = costs[type];
+            
+            if (player.upgradePoints >= cost) {
+                player.upgrades[type]++;
+                player.upgradePoints -= cost;
+                
+                // Применяем улучшение
+                applyUpgrades();
+                updateUpgradesDisplay();
+                saveGame();
+                
+                showUpgradeNotification(`✅ УЛУЧШЕНИЕ ПРИОБРЕТЕНО!`);
+            } else {
+                showUpgradeNotification('❌ Недостаточно очков улучшений');
+            }
+        }
+
+        function updateUpgradesDisplay() {
+            document.getElementById('speedLevel').textContent = player.upgrades.speed;
+            document.getElementById('barrierLevel').textContent = player.upgrades.barrier;
+            document.getElementById('magnetLevel').textContent = player.upgrades.magnet;
+            document.getElementById('upgradePoints').textContent = player.upgradePoints;
+        }
+
+        // ==================== РЕНДЕРИНГ ====================
         function renderGame() {
             const canvas = document.getElementById('gameCanvas');
             const ctx = canvas.getContext('2d');
             
-            // Очистка
-            ctx.fillStyle = '#1a1a2e';
+            // Очистка с анимированным фоном
+            ctx.fillStyle = '#0f0f1a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Сетка
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            // Анимированная сетка
+            drawGrid(ctx, canvas);
+            
+            // Объекты игры
+            drawBarriers(ctx);
+            drawPowerups(ctx);
+            drawPlayer(ctx);
+            drawEnemy(ctx);
+            drawParticles(ctx);
+        }
+
+        function drawGrid(ctx, canvas) {
+            const time = Date.now() * 0.001;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.03 + Math.sin(time) * 0.02})`;
             ctx.lineWidth = 1;
+            
             for (let x = 0; x < canvas.width; x += 50) {
                 ctx.beginPath();
                 ctx.moveTo(x, 0);
@@ -750,75 +1632,149 @@
                 ctx.lineTo(canvas.width, y);
                 ctx.stroke();
             }
-            
-            // Барьеры
+        }
+
+        function drawBarriers(ctx) {
             barriers.forEach(barrier => {
+                barrier.rotation += barrier.rotationSpeed;
+                
+                ctx.save();
+                ctx.translate(barrier.x, barrier.y);
+                ctx.rotate(barrier.rotation);
+                
+                // Свечение
+                ctx.shadowColor = barrier.color;
+                ctx.shadowBlur = 15;
+                
+                // Основной круг
                 ctx.fillStyle = barrier.color;
                 ctx.beginPath();
-                ctx.arc(barrier.x, barrier.y, barrier.size, 0, Math.PI * 2);
+                ctx.arc(0, 0, barrier.size, 0, Math.PI * 2);
                 ctx.fill();
                 
+                // Иконка щита
                 ctx.fillStyle = '#ffffff';
+                ctx.shadowBlur = 0;
+                
                 ctx.beginPath();
-                ctx.moveTo(barrier.x, barrier.y - barrier.size * 0.6);
-                ctx.lineTo(barrier.x + barrier.size * 0.4, barrier.y - barrier.size * 0.2);
-                ctx.lineTo(barrier.x + barrier.size * 0.4, barrier.y + barrier.size * 0.4);
-                ctx.lineTo(barrier.x - barrier.size * 0.4, barrier.y + barrier.size * 0.4);
-                ctx.lineTo(barrier.x - barrier.size * 0.4, barrier.y - barrier.size * 0.2);
+                ctx.moveTo(0, -barrier.size * 0.6);
+                ctx.lineTo(barrier.size * 0.4, -barrier.size * 0.2);
+                ctx.lineTo(barrier.size * 0.4, barrier.size * 0.4);
+                ctx.lineTo(-barrier.size * 0.4, barrier.size * 0.4);
+                ctx.lineTo(-barrier.size * 0.4, -barrier.size * 0.2);
                 ctx.closePath();
                 ctx.fill();
-            });
-            
-            // Игрок
-            if (player.hasActiveBarrier) {
-                // Эффект защиты
-                ctx.strokeStyle = '#feca57';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.arc(player.x, player.y, player.size + 8, 0, Math.PI * 2);
-                ctx.stroke();
                 
-                // Свечение защиты
-                ctx.strokeStyle = 'rgba(254, 202, 87, 0.3)';
-                ctx.lineWidth = 6;
+                ctx.restore();
+            });
+        }
+
+        function drawPowerups(ctx) {
+            const time = Date.now() * 0.001;
+            
+            powerups.forEach(powerup => {
+                powerup.rotation += 0.02;
+                const floatY = Math.sin(time + powerup.x * 0.01) * 3;
+                
+                ctx.save();
+                ctx.translate(powerup.x, powerup.y + floatY);
+                ctx.rotate(powerup.rotation);
+                
+                // Свечение
+                ctx.shadowColor = powerup.color;
+                ctx.shadowBlur = 20;
+                
+                // Основной круг
+                ctx.fillStyle = powerup.color;
+                ctx.beginPath();
+                ctx.arc(0, 0, powerup.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Внутренний круг
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(0, 0, powerup.size * 0.6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            });
+        }
+
+        function drawPlayer(ctx) {
+            const time = Date.now() * 0.001;
+            
+            // Эффект защиты
+            if (player.hasActiveBarrier) {
+                ctx.save();
+                ctx.strokeStyle = '#feca57';
+                ctx.lineWidth = 4;
+                ctx.shadowColor = '#feca57';
+                ctx.shadowBlur = 30;
                 ctx.beginPath();
                 ctx.arc(player.x, player.y, player.size + 12, 0, Math.PI * 2);
                 ctx.stroke();
-            } else if (player.barrierCooldown > 0) {
-                // Эффект перезарядки
-                ctx.strokeStyle = '#ff6b6b';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
+                
+                ctx.strokeStyle = 'rgba(254, 202, 87, 0.3)';
+                ctx.lineWidth = 8;
                 ctx.beginPath();
-                ctx.arc(player.x, player.y, player.size + 8, 0, Math.PI * 2);
+                ctx.arc(player.x, player.y, player.size + 18, 0, Math.PI * 2);
                 ctx.stroke();
-                ctx.setLineDash([]);
+                ctx.restore();
             }
             
+            // Эффект неуязвимости
+            if (player.isInvulnerable) {
+                ctx.save();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 5]);
+                ctx.shadowColor = '#ffffff';
+                ctx.shadowBlur = 20;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.size + 10, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            }
+            
+            // Основной круг игрока
+            ctx.save();
+            ctx.shadowColor = player.color;
+            ctx.shadowBlur = 20;
             ctx.fillStyle = player.color;
             ctx.beginPath();
             ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
             ctx.fill();
+            ctx.restore();
             
-            ctx.fillStyle = '#000000';
+            // Лицо игрока
+            ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.arc(player.x - 4, player.y - 3, 3, 0, Math.PI * 2);
-            ctx.arc(player.x + 4, player.y - 3, 3, 0, Math.PI * 2);
+            ctx.arc(player.x - 5, player.y - 4, 4, 0, Math.PI * 2);
+            ctx.arc(player.x + 5, player.y - 4, 4, 0, Math.PI * 2);
             ctx.fill();
             
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(player.x, player.y + 4, 2, 0, Math.PI);
+            ctx.arc(player.x, player.y + 5, 3, 0, Math.PI);
             ctx.stroke();
-            
-            // Враг (соска 69)
+        }
+
+        function drawEnemy(ctx) {
+            // Основной круг врага
+            ctx.save();
+            ctx.shadowColor = enemy.color;
+            ctx.shadowBlur = 25;
             ctx.fillStyle = enemy.color;
             ctx.beginPath();
             ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
             ctx.fill();
+            ctx.restore();
             
-            // Рисуем соску
+            // Текст "СОСКА 69"
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold ' + (enemy.size * 0.6) + 'px Arial';
+            ctx.font = 'bold ' + (enemy.size * 0.4) + 'px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText('СОСКА', enemy.x, enemy.y - 5);
@@ -831,36 +1787,130 @@
             ctx.arc(enemy.x + enemy.size * 0.3, enemy.y - enemy.size * 0.2, enemy.size * 0.1, 0, Math.PI * 2);
             ctx.fill();
         }
-        
-        function updateTimer() {
+
+        // ==================== ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ ====================
+        function updateHUD() {
+            // Таймер
             const minutes = Math.floor(gameTime / 60);
             const seconds = Math.floor(gameTime % 60);
             document.getElementById('timer').textContent = 
                 minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+            
+            // Дистанция
+            document.getElementById('distance').textContent = Math.floor(player.totalDistance);
+            
+            // Уровень
+            document.getElementById('level').textContent = player.level;
+            
+            // Комбо
+            document.getElementById('combo').textContent = 'x' + player.combo;
+            
+            // Обновление индикаторов здоровья
+            updateHealthDisplay();
+            
+            // Обновление индикаторов улучшений
+            updatePowerupIndicators();
+            
+            // Обновление перезарядки
+            updateCooldownDisplay();
         }
-        
+
+        function updateHealthDisplay() {
+            const indicators = document.querySelectorAll('.health-indicator');
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index < player.barriers);
+            });
+        }
+
+        function updatePowerupIndicators() {
+            const container = document.getElementById('powerupIndicators');
+            container.innerHTML = '';
+            
+            for (const type in player.powerups) {
+                if (player.powerups[type] > 0) {
+                    const indicator = document.createElement('div');
+                    indicator.className = `powerup-indicator ${type}`;
+                    container.appendChild(indicator);
+                }
+            }
+        }
+
+        function updateCooldownDisplay() {
+            const cooldownElement = document.getElementById('abilityCooldown');
+            if (player.barrierCooldown > 0) {
+                const secondsLeft = (player.barrierCooldown / 60).toFixed(1);
+                cooldownElement.textContent = `Перезарядка: ${secondsLeft}с`;
+            } else {
+                cooldownElement.textContent = '';
+            }
+        }
+
+        function updateMenuStats() {
+            document.getElementById('menuBestTime').textContent = formatTime(getBestTime());
+            document.getElementById('menuLevel').textContent = player.level;
+            document.getElementById('menuPoints').textContent = player.upgradePoints;
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return minutes.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+        }
+
+        // ==================== КОНЕЦ ИГРЫ ====================
         function gameOver() {
             clearInterval(gameInterval);
-            document.getElementById('finalTime').textContent = document.getElementById('timer').textContent;
+            
+            // Расчет наград
+            const earnedXP = Math.floor(gameTime * 5);
+            const earnedPoints = Math.floor(gameTime / 10);
+            
+            // Обновление статистики
+            document.getElementById('finalTime').textContent = formatTime(gameTime);
             document.getElementById('finalBarriers').textContent = player.barriers;
+            document.getElementById('finalDistance').textContent = Math.floor(player.totalDistance);
+            document.getElementById('finalXP').textContent = earnedXP;
+            document.getElementById('newUpgradePoints').textContent = earnedPoints;
+            
+            // Начисление наград
+            player.upgradePoints += earnedPoints;
+            addXP(earnedXP);
+            
+            // Сохранение игры
+            saveGame();
+            
+            // Показ экрана завершения
             hideAllScreens();
             document.getElementById('gameOverScreen').classList.remove('hidden');
         }
-        
+
         function restartGame() {
             clearInterval(gameInterval);
             startGame();
         }
-        
+
+        // ==================== ЗАГРУЗКА ИГРЫ ====================
         window.addEventListener('load', function() {
-            console.log('Page loaded');
+            // Загрузка сохраненной игры
+            loadGame();
             
-            setTimeout(() => {
-                document.getElementById('loadingScreen').classList.add('hidden');
-                document.getElementById('mainMenu').classList.remove('hidden');
-            }, 1000);
+            // Симуляция загрузки
+            let progress = 0;
+            const loadingInterval = setInterval(() => {
+                progress += 2;
+                document.getElementById('loadingProgress').style.width = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(loadingInterval);
+                    setTimeout(() => {
+                        document.getElementById('loadingScreen').classList.add('hidden');
+                        document.getElementById('mainMenu').classList.remove('hidden');
+                    }, 500);
+                }
+            }, 50);
         });
-        
+
+        // Предотвращение масштабирования на мобильных устройствах
         document.addEventListener('touchstart', function(e) {
             if (e.touches.length > 1) {
                 e.preventDefault();
