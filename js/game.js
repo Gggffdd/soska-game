@@ -8,6 +8,15 @@ class Game {
         this.difficulty = 'medium';
         this.effects = [];
         this.sounds = {};
+        this.fps = 60;
+        
+        // Настройки камеры
+        this.camera = {
+            x: 0,
+            y: 0,
+            zoom: 0.7,
+            targetZoom: 0.7
+        };
         
         this.initializeGame();
         this.setupEventListeners();
@@ -15,19 +24,14 @@ class Game {
     }
 
     initializeGame() {
-        // Set canvas size
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
 
-        // Initialize game objects
         this.player = new Player(this);
         this.enemy = new Enemy(this);
         this.barrierManager = new BarrierManager(this);
 
-        // Initialize sounds
         this.initializeSounds();
-
-        // Load settings
         this.loadSettings();
     }
 
@@ -35,9 +39,9 @@ class Game {
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight;
         
-        // Update game constants for responsive design
-        GameConstants.CANVAS_WIDTH = this.canvas.width;
-        GameConstants.CANVAS_HEIGHT = this.canvas.height;
+        // Большой игровой мир
+        GameConstants.CANVAS_WIDTH = Math.max(1200, this.canvas.width * 1.5);
+        GameConstants.CANVAS_HEIGHT = Math.max(1200, this.canvas.height * 1.5);
     }
 
     initializeSounds() {
@@ -48,47 +52,37 @@ class Game {
             collect: document.getElementById('collectSound')
         };
 
-        // Create fallback audio elements if needed
-        if (!this.sounds.barrier.src) {
-            this.sounds.barrier = new Audio();
-            this.sounds.barrier.volume = 0.3;
-        }
-        if (!this.sounds.gameOver.src) {
-            this.sounds.gameOver = new Audio();
-            this.sounds.gameOver.volume = 0.5;
-        }
-        if (!this.sounds.collect.src) {
-            this.sounds.collect = new Audio();
-            this.sounds.collect.volume = 0.4;
-        }
+        // Базовые настройки звука
+        Object.values(this.sounds).forEach(sound => {
+            if (sound) {
+                sound.volume = 0.5;
+            }
+        });
     }
 
     setupEventListeners() {
-        // Game control buttons
+        // Кнопки меню
         document.getElementById('startBtn').addEventListener('click', () => this.startGame());
         document.getElementById('settingsBtn').addEventListener('click', () => this.showSettings());
         document.getElementById('statsBtn').addEventListener('click', () => this.showStats());
         document.getElementById('pauseBtn').addEventListener('click', () => this.togglePause());
-        document.getElementById('barrierBtn').addEventListener('click', () => this.useBarrier());
         document.getElementById('useBarrier').addEventListener('click', () => this.useBarrier());
 
-        // Navigation buttons
+        // Навигация
         document.getElementById('backToMenu').addEventListener('click', () => this.showMainMenu());
         document.getElementById('saveSettings').addEventListener('click', () => this.saveSettings());
         document.getElementById('backFromStats').addEventListener('click', () => this.showMainMenu());
-        document.getElementById('resetStats').addEventListener('click', () => this.resetStatistics());
 
-        // Pause screen buttons
+        // Пауза
         document.getElementById('resumeBtn').addEventListener('click', () => this.resumeGame());
         document.getElementById('restartBtn').addEventListener('click', () => this.restartGame());
         document.getElementById('menuFromPause').addEventListener('click', () => this.showMainMenu());
 
-        // Game over screen buttons
+        // Game Over
         document.getElementById('playAgainBtn').addEventListener('click', () => this.restartGame());
         document.getElementById('menuFromGameOver').addEventListener('click', () => this.showMainMenu());
-        document.getElementById('shareBtn').addEventListener('click', () => this.shareScore());
 
-        // Settings controls
+        // Настройки
         document.getElementById('soundVolume').addEventListener('input', (e) => {
             document.getElementById('volumeValue').textContent = e.target.value + '%';
         });
@@ -97,13 +91,10 @@ class Game {
             this.difficulty = e.target.value;
         });
 
-        // Keyboard controls
+        // Клавиатура
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
 
-        // Prevent context menu on long press
-        this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-
-        // Swipe up for pause (mobile)
+        // Свайп для паузы
         let startY;
         this.canvas.addEventListener('touchstart', (e) => {
             startY = e.touches[0].clientY;
@@ -114,6 +105,9 @@ class Game {
                 this.togglePause();
             }
         });
+
+        // Предотвращение контекстного меню
+        this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     }
 
     handleKeyDown(e) {
@@ -127,12 +121,11 @@ class Game {
     }
 
     startLoading() {
-        // Simulate loading process
         const loadingProgress = document.querySelector('.loading-progress');
         let progress = 0;
         
         const loadingInterval = setInterval(() => {
-            progress += Math.random() * 10;
+            progress += Math.random() * 15;
             if (progress >= 100) {
                 progress = 100;
                 clearInterval(loadingInterval);
@@ -145,12 +138,9 @@ class Game {
     }
 
     showScreen(screenId) {
-        // Hide all screens
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.add('hidden');
         });
-        
-        // Show target screen
         document.getElementById(screenId).classList.remove('hidden');
     }
 
@@ -179,10 +169,10 @@ class Game {
         this.resetGame();
         this.gameLoop();
         
-        // Start background music if enabled
+        // Фоновая музыка
         if (this.settings.soundEnabled) {
             this.sounds.bgMusic.volume = this.settings.soundVolume / 100;
-            this.sounds.bgMusic.play().catch(e => console.log('Music play failed:', e));
+            this.sounds.bgMusic.play().catch(e => console.log('Music auto-play blocked'));
         }
     }
 
@@ -198,15 +188,8 @@ class Game {
         this.showScreen('pauseScreen');
         this.state.setState(GameState.STATES.PAUSED);
         
-        // Update pause screen stats
         document.getElementById('pauseTime').textContent = Utils.formatTime(this.gameTime);
         document.getElementById('pauseBarriers').textContent = this.player.barriers;
-        document.getElementById('pauseDistance').textContent = Math.floor(
-            Utils.distance(
-                this.player.x, this.player.y,
-                this.enemy.x, this.enemy.y
-            )
-        );
     }
 
     resumeGame() {
@@ -219,21 +202,17 @@ class Game {
         this.showScreen('gameOverScreen');
         this.state.setState(GameState.STATES.GAME_OVER);
         
-        // Update game over screen
+        // Обновление статистики
         document.getElementById('finalTime').textContent = Utils.formatTime(this.gameTime);
         document.getElementById('finalBarriers').textContent = this.player.barriers;
         
-        // Update best time
         const bestTime = Utils.getStorage('bestTime', 0);
         if (this.gameTime > bestTime) {
             Utils.setStorage('bestTime', this.gameTime);
         }
         document.getElementById('bestTime').textContent = Utils.formatTime(bestTime);
         
-        // Update statistics
         this.updateStatistics();
-        
-        // Play game over sound
         Utils.playSound(this.sounds.gameOver);
         Utils.vibrate([200, 100, 200]);
         
@@ -267,7 +246,6 @@ class Game {
             if (this.player.useBarrier()) {
                 this.updateHUD();
             } else {
-                // No barriers available - show warning
                 Utils.vibrate([50]);
             }
         }
@@ -275,47 +253,50 @@ class Game {
 
     updateHUD() {
         document.getElementById('timer').textContent = Utils.formatTime(this.gameTime);
-        document.getElementById('barrierCount').textContent = this.player.barriers;
+        
+        // Обновление индикаторов здоровья
+        const healthIndicators = document.querySelectorAll('.health-indicator');
+        healthIndicators.forEach((indicator, index) => {
+            if (index < this.player.barriers) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        });
     }
 
     gameLoop() {
         if (!this.state.is(GameState.STATES.PLAYING)) return;
 
-        // Update game state
         this.update();
-        
-        // Render game
         this.render();
         
-        // Continue game loop
         requestAnimationFrame(() => this.gameLoop());
     }
 
     update() {
-        // Update game time
-        this.gameTime += 1/60; // Assuming 60fps
-        
-        // Update HUD every second
+        this.gameTime += 1/60;
+
+        // Обновление HUD каждую секунду
         if (Math.floor(this.gameTime * 60) % 60 === 0) {
             this.updateHUD();
         }
 
-        // Update game objects
         this.player.update();
         this.enemy.update(this.player);
         this.barrierManager.update(this.player);
-
-        // Update effects
         this.updateEffects();
+        this.updateCamera();
 
-        // Check for game over
+        // Проверка столкновения
         if (this.enemy.checkCollision(this.player)) {
             this.gameOver();
         }
 
-        // Increase difficulty over time
-        if (this.gameTime > 30) { // After 30 seconds
-            this.enemy.speed = GameConstants.DIFFICULTY[this.difficulty].enemySpeed * (1 + this.gameTime / 120);
+        // Увеличение сложности со временем
+        if (this.gameTime > 30) {
+            const speedMultiplier = 1 + (this.gameTime - 30) / 120;
+            this.enemy.speed = GameConstants.DIFFICULTY[this.difficulty].enemySpeed * speedMultiplier;
         }
     }
 
@@ -328,80 +309,82 @@ class Game {
         }
     }
 
+    updateCamera() {
+        const playerPos = this.player.getPosition();
+        
+        // Камера следует за игроком
+        this.camera.x = playerPos.x - this.canvas.width / (2 * this.camera.zoom);
+        this.camera.y = playerPos.y - this.canvas.height / (2 * this.camera.zoom);
+        
+        // Ограничение камеры
+        const maxX = GameConstants.CANVAS_WIDTH - this.canvas.width / this.camera.zoom;
+        const maxY = GameConstants.CANVAS_HEIGHT - this.canvas.height / this.camera.zoom;
+        
+        this.camera.x = Utils.clamp(this.camera.x, 0, maxX);
+        this.camera.y = Utils.clamp(this.camera.y, 0, maxY);
+        
+        // Плавное изменение зума
+        this.camera.zoom = Utils.lerp(this.camera.zoom, this.camera.targetZoom, 0.1);
+    }
+
     render() {
-        // Clear canvas
+        // Очистка canvas
         this.ctx.fillStyle = '#1a1a2e';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Draw grid background
-        this.drawBackground();
+        this.ctx.save();
+        
+        // Применение трансформаций камеры
+        this.ctx.scale(this.camera.zoom, this.camera.zoom);
+        this.ctx.translate(-this.camera.x, -this.camera.y);
 
-        // Draw game objects
+        // Отрисовка игрового мира
+        this.drawBackground();
         this.barrierManager.draw();
         this.player.draw();
         this.enemy.draw();
-
-        // Draw effects
         this.effects.forEach(effect => effect.draw(this.ctx));
 
-        // Draw debug info (optional)
-        if (this.settings.showDebug) {
-            this.drawDebugInfo();
-        }
+        this.ctx.restore();
     }
 
     drawBackground() {
         const ctx = this.ctx;
-        const gridSize = 50;
+        const gridSize = 80;
         
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.lineWidth = 1;
         
-        // Vertical lines
-        for (let x = 0; x < this.canvas.width; x += gridSize) {
+        // Вертикальные линии
+        const startX = Math.floor(this.camera.x / gridSize) * gridSize;
+        const endX = this.camera.x + this.canvas.width / this.camera.zoom;
+        
+        for (let x = startX; x <= endX; x += gridSize) {
             ctx.beginPath();
-            ctx.moveTo(x, 0);
-            ctx.lineTo(x, this.canvas.height);
+            ctx.moveTo(x, this.camera.y);
+            ctx.lineTo(x, this.camera.y + this.canvas.height / this.camera.zoom);
             ctx.stroke();
         }
         
-        // Horizontal lines
-        for (let y = 0; y < this.canvas.height; y += gridSize) {
+        // Горизонтальные линии
+        const startY = Math.floor(this.camera.y / gridSize) * gridSize;
+        const endY = this.camera.y + this.canvas.height / this.camera.zoom;
+        
+        for (let y = startY; y <= endY; y += gridSize) {
             ctx.beginPath();
-            ctx.moveTo(0, y);
-            ctx.lineTo(this.canvas.width, y);
+            ctx.moveTo(this.camera.x, y);
+            ctx.lineTo(this.camera.x + this.canvas.width / this.camera.zoom, y);
             ctx.stroke();
         }
     }
 
-    drawDebugInfo() {
-        this.ctx.fillStyle = 'white';
-        this.ctx.font = '12px Arial';
-        this.ctx.textAlign = 'left';
-        
-        const debugInfo = [
-            `FPS: ${Math.round(this.fps)}`,
-            `Player: (${Math.round(this.player.x)}, ${Math.round(this.player.y)})`,
-            `Enemy: (${Math.round(this.enemy.x)}, ${Math.round(this.enemy.y)})`,
-            `Barriers: ${this.barrierManager.getBarrierCount()}`,
-            `Effects: ${this.effects.length}`,
-            `Difficulty: ${this.difficulty}`
-        ];
-        
-        debugInfo.forEach((info, index) => {
-            this.ctx.fillText(info, 10, 20 + index * 15);
-        });
-    }
-
-    // Settings management
+    // Управление настройками
     loadSettings() {
         this.settings = Utils.getStorage('gameSettings', {
             soundVolume: 50,
             soundEnabled: true,
             vibration: true,
-            particles: true,
-            difficulty: 'medium',
-            showDebug: false
+            difficulty: 'medium'
         });
         
         this.difficulty = this.settings.difficulty;
@@ -412,7 +395,6 @@ class Game {
         document.getElementById('volumeValue').textContent = this.settings.soundVolume + '%';
         document.getElementById('gameDifficulty').value = this.settings.difficulty;
         document.getElementById('vibration').checked = this.settings.vibration;
-        document.getElementById('particles').checked = this.settings.particles;
     }
 
     saveSettings() {
@@ -420,47 +402,41 @@ class Game {
             soundVolume: parseInt(document.getElementById('soundVolume').value),
             soundEnabled: true,
             vibration: document.getElementById('vibration').checked,
-            particles: document.getElementById('particles').checked,
-            difficulty: document.getElementById('gameDifficulty').value,
-            showDebug: false
+            difficulty: document.getElementById('gameDifficulty').value
         };
         
         Utils.setStorage('gameSettings', this.settings);
         this.difficulty = this.settings.difficulty;
         this.enemy.setDifficulty(this.difficulty);
         
-        // Apply sound settings
+        // Применение настроек звука
         this.sounds.bgMusic.volume = this.settings.soundVolume / 100;
         
         this.showMainMenu();
     }
 
-    // Statistics management
+    // Статистика
     loadStatistics() {
         const stats = Utils.getStorage('gameStatistics', {
             bestTime: 0,
             totalGames: 0,
-            totalBarriers: 0,
-            totalTime: 0
+            totalBarriers: 0
         });
         
         document.getElementById('statBestTime').textContent = Utils.formatTime(stats.bestTime);
         document.getElementById('statTotalGames').textContent = stats.totalGames;
         document.getElementById('statTotalBarriers').textContent = stats.totalBarriers;
-        document.getElementById('statTotalTime').textContent = Utils.formatTime(stats.totalTime);
     }
 
     updateStatistics() {
         const stats = Utils.getStorage('gameStatistics', {
             bestTime: 0,
             totalGames: 0,
-            totalBarriers: 0,
-            totalTime: 0
+            totalBarriers: 0
         });
         
         stats.totalGames++;
         stats.totalBarriers += this.player.barriers;
-        stats.totalTime += this.gameTime;
         
         if (this.gameTime > stats.bestTime) {
             stats.bestTime = this.gameTime;
@@ -468,75 +444,10 @@ class Game {
         
         Utils.setStorage('gameStatistics', stats);
     }
-
-    resetStatistics() {
-        const defaultStats = {
-            bestTime: 0,
-            totalGames: 0,
-            totalBarriers: 0,
-            totalTime: 0
-        };
-        
-        Utils.setStorage('gameStatistics', defaultStats);
-        this.loadStatistics();
-    }
-
-    shareScore() {
-        const text = `Я играл в Number Chase и продержался ${Utils.formatTime(this.gameTime)}! Сможешь побить мой рекорд?`;
-        
-        if (navigator.share) {
-            navigator.share({
-                title: 'Number Chase',
-                text: text,
-                url: window.location.href
-            }).catch(() => this.fallbackShare(text));
-        } else {
-            this.fallbackShare(text);
-        }
-    }
-
-    fallbackShare(text) {
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Результат скопирован в буфер обмена!');
-            });
-        } else {
-            prompt('Скопируйте ваш результат:', text);
-        }
-    }
 }
 
-// FPS counter
-class FPSCounter {
-    constructor() {
-        this.fps = 0;
-        this.frameCount = 0;
-        this.lastTime = performance.now();
-    }
-
-    update() {
-        this.frameCount++;
-        const currentTime = performance.now();
-        if (currentTime >= this.lastTime + 1000) {
-            this.fps = Math.round((this.frameCount * 1000) / (currentTime - this.lastTime));
-            this.frameCount = 0;
-            this.lastTime = currentTime;
-        }
-        return this.fps;
-    }
-}
-
-// Initialize game when page loads
+// Инициализация игры
 window.addEventListener('load', () => {
     const game = new Game();
-    window.game = game; // For debugging
-    
-    // Initialize FPS counter
-    const fpsCounter = new FPSCounter();
-    
-    function updateFPS() {
-        game.fps = fpsCounter.update();
-        requestAnimationFrame(updateFPS);
-    }
-    updateFPS();
+    window.game = game;
 });
