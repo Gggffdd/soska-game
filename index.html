@@ -950,8 +950,14 @@
             // Сброс улучшений (только на время игры)
             player.powerups = { speed: 0, slow: 0, magnet: 0, shield: 0 };
 
-            enemy.x = Math.random() * canvas.width;
-            enemy.y = Math.random() * canvas.height;
+            // Враг появляется на достаточном расстоянии от игрока
+            let safeDistance = false;
+            while (!safeDistance) {
+                enemy.x = Math.random() * canvas.width;
+                enemy.y = Math.random() * canvas.height;
+                const dist = Math.sqrt((player.x - enemy.x) ** 2 + (player.y - enemy.y) ** 2);
+                if (dist > 300) safeDistance = true;
+            }
             enemy.speed = enemy.baseSpeed;
 
             barriers = [];
@@ -998,7 +1004,10 @@
 
             // Кнопка барьера
             barrierBtn.addEventListener('click', useBarrier);
-            barrierBtn.addEventListener('touchstart', useBarrier);
+            barrierBtn.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                useBarrier();
+            });
 
             function handleTouchStart(e) {
                 e.preventDefault();
@@ -1023,7 +1032,7 @@
                 }
             }
 
-            function handleTouchEnd() {
+            function handleTouchEnd(e) {
                 if (isJoystickActive) deactivateJoystick();
                 currentTouchId = null;
             }
@@ -1189,16 +1198,6 @@
                 shield: '#1dd1a1'
             };
             return colors[type] || '#ffffff';
-        }
-
-        function getPowerupName(type) {
-            const names = {
-                speed: '⚡ СКОРОСТЬ',
-                slow: '🌀 ЗАМЕДЛЕНИЕ',
-                magnet: '🧲 МАГНИТ',
-                shield: '💎 ЩИТ'
-            };
-            return names[type] || 'УЛУЧШЕНИЕ';
         }
 
         function collectPowerups() {
@@ -1384,6 +1383,10 @@
 
         // ==================== ОСНОВНОЙ ИГРОВОЙ ЦИКЛ ====================
         function startGameLoop() {
+            if (gameInterval) {
+                clearInterval(gameInterval);
+            }
+            
             gameInterval = setInterval(() => {
                 updateGame();
                 renderGame();
@@ -1918,7 +1921,10 @@
 
         // ==================== КОНЕЦ ИГРЫ ====================
         function gameOver() {
-            clearInterval(gameInterval);
+            if (gameInterval) {
+                clearInterval(gameInterval);
+                gameInterval = null;
+            }
             
             // Сохраняем финальное время
             currentGameStats.time = gameTime;
@@ -1945,7 +1951,10 @@
         }
 
         function restartGame() {
-            clearInterval(gameInterval);
+            if (gameInterval) {
+                clearInterval(gameInterval);
+                gameInterval = null;
+            }
             startGame();
         }
 
@@ -1979,6 +1988,20 @@
         
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
+        });
+
+        // Адаптация к изменению размера окна
+        window.addEventListener('resize', function() {
+            if (document.getElementById('gameScreen').classList.contains('hidden')) return;
+            
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Перерисовка игры
+            renderGame();
         });
     </script>
 </body>
