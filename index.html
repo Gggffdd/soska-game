@@ -181,6 +181,15 @@
             font-size: 0.9em;
             pointer-events: none;
         }
+        
+        .debug-info {
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            color: white;
+            font-size: 0.8em;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -210,8 +219,8 @@
                     <p>• Перетаскивайте палец для управления</p>
                     <p>• Джойстик появляется в месте касания</p>
                     <p>• Нажимайте правую кнопку для активации барьера</p>
+                    <p>• Барьер автоматически защищает при столкновении</p>
                     <p>• Собирайте желтые щиты для защиты</p>
-                    <p>• Барьер защищает от одного удара</p>
                     <p>• Бегите от числа 69!</p>
                 </div>
                 <button class="menu-btn" onclick="showMainMenu()">Назад</button>
@@ -232,6 +241,10 @@
                         <div class="health-indicator"></div>
                         <div class="health-indicator"></div>
                     </div>
+                </div>
+                
+                <div class="debug-info" id="debugInfo">
+                    Барьеры: 0 | Защита: НЕТ
                 </div>
                 
                 <!-- Плавающий джойстик -->
@@ -269,8 +282,8 @@
             x: 0, 
             y: 0, 
             barriers: 0,
-            invulnerable: 0,
-            hasActiveBarrier: false
+            hasActiveBarrier: false,
+            isInvulnerable: false
         };
         let enemy = { x: 0, y: 0 };
         let barriers = [];
@@ -337,8 +350,8 @@
                 color: '#48dbfb',
                 barriers: 0,
                 speed: GameConstants.PLAYER_SPEED,
-                invulnerable: 0,
-                hasActiveBarrier: false
+                hasActiveBarrier: false,
+                isInvulnerable: false
             };
             
             enemy = {
@@ -356,6 +369,7 @@
             initControls();
             
             console.log('Game initialized');
+            updateDebugInfo();
         }
         
         function initControls() {
@@ -518,13 +532,13 @@
             if (player.barriers > 0 && !player.hasActiveBarrier) {
                 player.barriers--;
                 player.hasActiveBarrier = true;
-                player.invulnerable = 180;
                 updateHealthDisplay();
                 
                 const barrierBtn = document.getElementById('useBarrier');
                 barrierBtn.classList.add('barrier-active');
                 
-                console.log('Барьер активирован! Защита на 3 секунды');
+                console.log('Барьер активирован!');
+                updateDebugInfo();
             }
         }
         
@@ -533,6 +547,12 @@
             indicators.forEach((indicator, index) => {
                 indicator.classList.toggle('active', index < player.barriers);
             });
+        }
+        
+        function updateDebugInfo() {
+            const debugInfo = document.getElementById('debugInfo');
+            const barrierStatus = player.hasActiveBarrier ? 'АКТИВНА' : 'НЕТ';
+            debugInfo.textContent = `Барьеры: ${player.barriers} | Защита: ${barrierStatus}`;
         }
         
         // Игровой цикл
@@ -594,18 +614,8 @@
                     player.barriers++;
                     barriers.splice(i, 1);
                     updateHealthDisplay();
+                    updateDebugInfo();
                     console.log('Барьер подобран! Всего барьеров:', player.barriers);
-                }
-            }
-            
-            // Обновление состояния барьера
-            if (player.hasActiveBarrier) {
-                player.invulnerable--;
-                if (player.invulnerable <= 0) {
-                    player.hasActiveBarrier = false;
-                    const barrierBtn = document.getElementById('useBarrier');
-                    barrierBtn.classList.remove('barrier-active');
-                    console.log('Защита барьера закончилась');
                 }
             }
             
@@ -615,22 +625,32 @@
                 Math.pow(player.y - enemy.y, 2)
             );
             
-            if (distToEnemy < player.size + enemy.size) {
+            const collisionDistance = player.size + enemy.size - 5; // Небольшой зазор
+            
+            if (distToEnemy < collisionDistance) {
                 if (player.hasActiveBarrier) {
+                    // Барьер поглощает удар
                     player.hasActiveBarrier = false;
-                    player.invulnerable = 0;
                     const barrierBtn = document.getElementById('useBarrier');
                     barrierBtn.classList.remove('barrier-active');
-                    console.log('Барьер поглотил удар!');
                     
-                    const pushForce = 5;
+                    // Отталкивание врага
+                    const pushForce = 8;
                     const pushX = (enemy.x - player.x) / distToEnemy;
                     const pushY = (enemy.y - player.y) / distToEnemy;
                     enemy.x += pushX * pushForce;
                     enemy.y += pushY * pushForce;
                     
+                    // Отталкивание игрока
+                    player.x -= pushX * pushForce;
+                    player.y -= pushY * pushForce;
+                    
+                    console.log('Барьер поглотил удар!');
+                    updateDebugInfo();
+                    
                 } else {
                     gameOver();
+                    return;
                 }
             }
             
@@ -710,14 +730,22 @@
             
             // Игрок
             if (player.hasActiveBarrier) {
+                // Эффект защиты
                 ctx.strokeStyle = '#feca57';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
                 ctx.arc(player.x, player.y, player.size + 8, 0, Math.PI * 2);
                 ctx.stroke();
+                
+                // Свечение защиты
+                ctx.strokeStyle = 'rgba(254, 202, 87, 0.3)';
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.size + 12, 0, Math.PI * 2);
+                ctx.stroke();
             }
             
-            ctx.fillStyle = player.invulnerable > 0 ? '#ffffff' : player.color;
+            ctx.fillStyle = player.color;
             ctx.beginPath();
             ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
             ctx.fill();
