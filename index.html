@@ -6,7 +6,6 @@
     <meta name="theme-color" content="#667eea">
     <title>Number Chase</title>
     <style>
-        /* Базовые стили */
         * {
             margin: 0;
             padding: 0;
@@ -47,7 +46,6 @@
             background: #1a1a2e;
         }
         
-        /* Меню */
         .menu-content {
             text-align: center;
             background: rgba(255, 255, 255, 0.1);
@@ -76,7 +74,6 @@
             display: block;
         }
         
-        /* HUD */
         #gameHUD {
             position: absolute;
             top: 0;
@@ -114,7 +111,6 @@
             background: #feca57;
         }
         
-        /* Управление */
         #touchControls {
             position: absolute;
             bottom: 10px;
@@ -155,11 +151,15 @@
             font-size: 1.5em;
             cursor: pointer;
         }
+        
+        .barrier-active {
+            background: rgba(254, 202, 87, 0.3) !important;
+            border: 2px solid #feca57 !important;
+        }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <!-- Экран загрузки -->
         <div id="loadingScreen" class="screen">
             <div class="menu-content">
                 <h1>NUMBER CHASE</h1>
@@ -168,7 +168,6 @@
             </div>
         </div>
 
-        <!-- Главное меню -->
         <div id="mainMenu" class="screen hidden">
             <div class="menu-content">
                 <h1>NUMBER CHASE</h1>
@@ -178,7 +177,6 @@
             </div>
         </div>
 
-        <!-- Инструкции -->
         <div id="instructionsScreen" class="screen hidden">
             <div class="menu-content">
                 <h1>КАК ИГРАТЬ</h1>
@@ -186,13 +184,13 @@
                     <p>• Перетаскивайте палец в левой области для движения</p>
                     <p>• Нажимайте правую кнопку для активации барьера</p>
                     <p>• Собирайте желтые щиты для защиты</p>
+                    <p>• Барьер защищает от одного удара</p>
                     <p>• Бегите от числа 69!</p>
                 </div>
                 <button class="menu-btn" onclick="showMainMenu()">Назад</button>
             </div>
         </div>
 
-        <!-- Игровой экран -->
         <div id="gameScreen" class="screen hidden">
             <canvas id="gameCanvas"></canvas>
             
@@ -218,11 +216,11 @@
             </div>
         </div>
 
-        <!-- Game Over -->
         <div id="gameOverScreen" class="screen hidden">
             <div class="menu-content">
                 <h1>GAME OVER</h1>
                 <p>Время: <span id="finalTime">0</span></p>
+                <p>Собрано барьеров: <span id="finalBarriers">0</span></p>
                 <button class="menu-btn" onclick="restartGame()">Играть снова</button>
                 <button class="menu-btn" onclick="showMainMenu()">В меню</button>
             </div>
@@ -231,19 +229,27 @@
 
     <script>
         // Глобальные переменные
-        let game = null;
         let gameTime = 0;
         let gameInterval = null;
-        let player = { x: 0, y: 0, barriers: 0 };
+        let player = { 
+            x: 0, 
+            y: 0, 
+            barriers: 0,
+            invulnerable: 0,
+            hasActiveBarrier: false
+        };
         let enemy = { x: 0, y: 0 };
         let barriers = [];
+        let barrierSpawnTimer = 0;
         
         // Константы игры
         const GameConstants = {
             PLAYER_SIZE: 15,
             ENEMY_SIZE: 30,
             BARRIER_SIZE: 10,
-            PLAYER_SPEED: 3
+            PLAYER_SPEED: 3,
+            BARRIER_SPAWN_RATE: 600, // 10 секунд при 60 FPS
+            MAX_BARRIERS: 8
         };
         
         // Функции навигации
@@ -292,7 +298,9 @@
                 size: GameConstants.PLAYER_SIZE,
                 color: '#48dbfb',
                 barriers: 0,
-                speed: GameConstants.PLAYER_SPEED
+                speed: GameConstants.PLAYER_SPEED,
+                invulnerable: 0,
+                hasActiveBarrier: false
             };
             
             enemy = {
@@ -304,6 +312,7 @@
             };
             
             barriers = [];
+            barrierSpawnTimer = 0;
             
             // Инициализация управления
             initControls();
@@ -379,11 +388,17 @@
         }
         
         function useBarrier() {
-            if (player.barriers > 0) {
+            if (player.barriers > 0 && !player.hasActiveBarrier) {
                 player.barriers--;
+                player.hasActiveBarrier = true;
+                player.invulnerable = 180; // 3 секунды защиты
                 updateHealthDisplay();
-                // Эффект барьера - 3 секунды неуязвимости
-                player.invulnerable = 180;
+                
+                // Визуальный эффект активации барьера
+                const barrierBtn = document.getElementById('useBarrier');
+                barrierBtn.classList.add('barrier-active');
+                
+                console.log('Барьер активирован! Защита на 3 секунды');
             }
         }
         
@@ -397,6 +412,7 @@
         // Игровой цикл
         function startGameLoop() {
             gameTime = 0;
+            barrierSpawnTimer = 0;
             updateTimer();
             
             gameInterval = setInterval(() => {
@@ -433,14 +449,11 @@
                 enemy.y += (dy / distance) * enemy.speed;
             }
             
-            // Спавн барьеров
-            if (Math.random() < 0.01 && barriers.length < 5) {
-                barriers.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    size: GameConstants.BARRIER_SIZE,
-                    color: '#feca57'
-                });
+            // Спавн барьеров каждые 10 секунд
+            barrierSpawnTimer++;
+            if (barrierSpawnTimer >= GameConstants.BARRIER_SPAWN_RATE && barriers.length < GameConstants.MAX_BARRIERS) {
+                spawnBarrier();
+                barrierSpawnTimer = 0;
             }
             
             // Коллекция барьеров
@@ -455,29 +468,78 @@
                     player.barriers++;
                     barriers.splice(i, 1);
                     updateHealthDisplay();
+                    console.log('Барьер подобран! Всего барьеров:', player.barriers);
+                }
+            }
+            
+            // Обновление состояния барьера
+            if (player.hasActiveBarrier) {
+                player.invulnerable--;
+                if (player.invulnerable <= 0) {
+                    player.hasActiveBarrier = false;
+                    const barrierBtn = document.getElementById('useBarrier');
+                    barrierBtn.classList.remove('barrier-active');
+                    console.log('Защита барьера закончилась');
                 }
             }
             
             // Проверка столкновения с врагом
-            if (!player.invulnerable) {
-                const distToEnemy = Math.sqrt(
-                    Math.pow(player.x - enemy.x, 2) + 
-                    Math.pow(player.y - enemy.y, 2)
-                );
-                
-                if (distToEnemy < player.size + enemy.size) {
+            const distToEnemy = Math.sqrt(
+                Math.pow(player.x - enemy.x, 2) + 
+                Math.pow(player.y - enemy.y, 2)
+            );
+            
+            if (distToEnemy < player.size + enemy.size) {
+                if (player.hasActiveBarrier) {
+                    // Барьер поглощает удар
+                    player.hasActiveBarrier = false;
+                    player.invulnerable = 0;
+                    const barrierBtn = document.getElementById('useBarrier');
+                    barrierBtn.classList.remove('barrier-active');
+                    console.log('Барьер поглотил удар!');
+                    
+                    // Отталкивание врага при активации барьера
+                    const pushForce = 5;
+                    const pushX = (enemy.x - player.x) / distToEnemy;
+                    const pushY = (enemy.y - player.y) / distToEnemy;
+                    enemy.x += pushX * pushForce;
+                    enemy.y += pushY * pushForce;
+                    
+                } else {
                     gameOver();
                 }
-            }
-            
-            // Уменьшение времени неуязвимости
-            if (player.invulnerable) {
-                player.invulnerable--;
             }
             
             // Увеличение сложности
             if (gameTime > 30) {
                 enemy.speed = 2 + (gameTime - 30) / 30;
+            }
+        }
+        
+        function spawnBarrier() {
+            const canvas = document.getElementById('gameCanvas');
+            let validPosition = false;
+            let attempts = 0;
+            
+            while (!validPosition && attempts < 10) {
+                const x = Math.random() * (canvas.width - GameConstants.BARRIER_SIZE * 2) + GameConstants.BARRIER_SIZE;
+                const y = Math.random() * (canvas.height - GameConstants.BARRIER_SIZE * 2) + GameConstants.BARRIER_SIZE;
+                
+                // Проверяем, чтобы барьер не спавнился слишком близко к игроку или врагу
+                const distToPlayer = Math.sqrt(Math.pow(x - player.x, 2) + Math.pow(y - player.y, 2));
+                const distToEnemy = Math.sqrt(Math.pow(x - enemy.x, 2) + Math.pow(y - enemy.y, 2));
+                
+                if (distToPlayer > 100 && distToEnemy > 100) {
+                    barriers.push({
+                        x: x,
+                        y: y,
+                        size: GameConstants.BARRIER_SIZE,
+                        color: '#feca57'
+                    });
+                    validPosition = true;
+                    console.log('Новый барьер создан! Всего барьеров на карте:', barriers.length);
+                }
+                attempts++;
             }
         }
         
@@ -525,7 +587,16 @@
             });
             
             // Игрок
-            ctx.fillStyle = player.invulnerable ? '#ffffff' : player.color;
+            if (player.hasActiveBarrier) {
+                // Эффект защиты
+                ctx.strokeStyle = '#feca57';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.size + 8, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            ctx.fillStyle = player.invulnerable > 0 ? '#ffffff' : player.color;
             ctx.beginPath();
             ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
             ctx.fill();
@@ -571,6 +642,7 @@
         function gameOver() {
             clearInterval(gameInterval);
             document.getElementById('finalTime').textContent = document.getElementById('timer').textContent;
+            document.getElementById('finalBarriers').textContent = player.barriers;
             hideAllScreens();
             document.getElementById('gameOverScreen').classList.remove('hidden');
         }
@@ -584,14 +656,12 @@
         window.addEventListener('load', function() {
             console.log('Page loaded');
             
-            // Показываем меню через 1 секунду
             setTimeout(() => {
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('mainMenu').classList.remove('hidden');
             }, 1000);
         });
         
-        // Предотвращение масштабирования
         document.addEventListener('touchstart', function(e) {
             if (e.touches.length > 1) {
                 e.preventDefault();
