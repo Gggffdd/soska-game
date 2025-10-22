@@ -190,13 +190,22 @@
             font-size: 0.8em;
             pointer-events: none;
         }
+        
+        .cooldown-indicator {
+            position: absolute;
+            top: 70px;
+            left: 10px;
+            color: #ff6b6b;
+            font-size: 0.8em;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <div id="loadingScreen" class="screen">
             <div class="menu-content">
-                <h1>NUMBER CHASE</h1>
+                <h1>SOSKA CHASE</h1>
                 <div id="loadingStatus">Загрузка...</div>
                 <button class="menu-btn" onclick="skipLoading()">Пропустить загрузку</button>
             </div>
@@ -204,8 +213,8 @@
 
         <div id="mainMenu" class="screen hidden">
             <div class="menu-content">
-                <h1>NUMBER CHASE</h1>
-                <p style="margin-bottom: 1em; color: rgba(255,255,255,0.8);">Беги от числа 69!</p>
+                <h1>SOSKA CHASE</h1>
+                <p style="margin-bottom: 1em; color: rgba(255,255,255,0.8);">Беги от соски 69!</p>
                 <button class="menu-btn" onclick="startGame()">Начать игру</button>
                 <button class="menu-btn" onclick="showInstructions()">Как играть</button>
             </div>
@@ -220,8 +229,9 @@
                     <p>• Джойстик появляется в месте касания</p>
                     <p>• Нажимайте правую кнопку для активации барьера</p>
                     <p>• Барьер автоматически защищает при столкновении</p>
+                    <p>• После слома барьера у вас есть 1 секунда</p>
                     <p>• Собирайте желтые щиты для защиты</p>
-                    <p>• Бегите от числа 69!</p>
+                    <p>• Бегите от соски 69!</p>
                 </div>
                 <button class="menu-btn" onclick="showMainMenu()">Назад</button>
             </div>
@@ -246,6 +256,9 @@
                 <div class="debug-info" id="debugInfo">
                     Барьеры: 0 | Защита: НЕТ
                 </div>
+                <div class="cooldown-indicator" id="cooldownInfo">
+                    
+                </div>
                 
                 <!-- Плавающий джойстик -->
                 <div id="floatingJoystick">
@@ -266,6 +279,7 @@
         <div id="gameOverScreen" class="screen hidden">
             <div class="menu-content">
                 <h1>GAME OVER</h1>
+                <p>Соска 69 догнала вас!</p>
                 <p>Время: <span id="finalTime">0</span></p>
                 <p>Собрано барьеров: <span id="finalBarriers">0</span></p>
                 <button class="menu-btn" onclick="restartGame()">Играть снова</button>
@@ -283,7 +297,7 @@
             y: 0, 
             barriers: 0,
             hasActiveBarrier: false,
-            isInvulnerable: false
+            barrierCooldown: 0
         };
         let enemy = { x: 0, y: 0 };
         let barriers = [];
@@ -300,7 +314,8 @@
             PLAYER_SPEED: 4,
             BARRIER_SPAWN_RATE: 600,
             MAX_BARRIERS: 8,
-            JOYSTICK_RADIUS: 80
+            JOYSTICK_RADIUS: 80,
+            BARRIER_COOLDOWN: 60 // 1 секунда при 60 FPS
         };
         
         // Функции навигации
@@ -351,7 +366,7 @@
                 barriers: 0,
                 speed: GameConstants.PLAYER_SPEED,
                 hasActiveBarrier: false,
-                isInvulnerable: false
+                barrierCooldown: 0
             };
             
             enemy = {
@@ -529,7 +544,7 @@
         }
         
         function useBarrier() {
-            if (player.barriers > 0 && !player.hasActiveBarrier) {
+            if (player.barriers > 0 && !player.hasActiveBarrier && player.barrierCooldown === 0) {
                 player.barriers--;
                 player.hasActiveBarrier = true;
                 updateHealthDisplay();
@@ -553,6 +568,15 @@
             const debugInfo = document.getElementById('debugInfo');
             const barrierStatus = player.hasActiveBarrier ? 'АКТИВНА' : 'НЕТ';
             debugInfo.textContent = `Барьеры: ${player.barriers} | Защита: ${barrierStatus}`;
+            
+            const cooldownInfo = document.getElementById('cooldownInfo');
+            if (player.barrierCooldown > 0) {
+                const secondsLeft = (player.barrierCooldown / 60).toFixed(1);
+                cooldownInfo.textContent = `Перезарядка: ${secondsLeft}с`;
+                cooldownInfo.style.display = 'block';
+            } else {
+                cooldownInfo.style.display = 'none';
+            }
         }
         
         // Игровой цикл
@@ -595,6 +619,11 @@
                 enemy.y += (dy / distance) * enemy.speed;
             }
             
+            // Обновление кд барьера
+            if (player.barrierCooldown > 0) {
+                player.barrierCooldown--;
+            }
+            
             // Спавн барьеров
             barrierSpawnTimer++;
             if (barrierSpawnTimer >= GameConstants.BARRIER_SPAWN_RATE && barriers.length < GameConstants.MAX_BARRIERS) {
@@ -625,12 +654,14 @@
                 Math.pow(player.y - enemy.y, 2)
             );
             
-            const collisionDistance = player.size + enemy.size - 5; // Небольшой зазор
+            const collisionDistance = player.size + enemy.size - 5;
             
             if (distToEnemy < collisionDistance) {
                 if (player.hasActiveBarrier) {
                     // Барьер поглощает удар
                     player.hasActiveBarrier = false;
+                    player.barrierCooldown = GameConstants.BARRIER_COOLDOWN; // 1 секунда кд
+                    
                     const barrierBtn = document.getElementById('useBarrier');
                     barrierBtn.classList.remove('barrier-active');
                     
@@ -645,10 +676,11 @@
                     player.x -= pushX * pushForce;
                     player.y -= pushY * pushForce;
                     
-                    console.log('Барьер поглотил удар!');
+                    console.log('Барьер поглотил удар! Перезарядка 1 секунда');
                     updateDebugInfo();
                     
-                } else {
+                } else if (player.barrierCooldown === 0) {
+                    // Нет защиты и нет кд - смерть
                     gameOver();
                     return;
                 }
@@ -743,6 +775,15 @@
                 ctx.beginPath();
                 ctx.arc(player.x, player.y, player.size + 12, 0, Math.PI * 2);
                 ctx.stroke();
+            } else if (player.barrierCooldown > 0) {
+                // Эффект перезарядки
+                ctx.strokeStyle = '#ff6b6b';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.arc(player.x, player.y, player.size + 8, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
             }
             
             ctx.fillStyle = player.color;
@@ -760,18 +801,21 @@
             ctx.arc(player.x, player.y + 4, 2, 0, Math.PI);
             ctx.stroke();
             
-            // Враг
+            // Враг (соска 69)
             ctx.fillStyle = enemy.color;
             ctx.beginPath();
             ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
             ctx.fill();
             
+            // Рисуем соску
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold ' + (enemy.size * 0.8) + 'px Arial';
+            ctx.font = 'bold ' + (enemy.size * 0.6) + 'px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('69', enemy.x, enemy.y);
+            ctx.fillText('СОСКА', enemy.x, enemy.y - 5);
+            ctx.fillText('69', enemy.x, enemy.y + 8);
             
+            // Глаза
             ctx.fillStyle = '#000000';
             ctx.beginPath();
             ctx.arc(enemy.x - enemy.size * 0.3, enemy.y - enemy.size * 0.2, enemy.size * 0.1, 0, Math.PI * 2);
