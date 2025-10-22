@@ -2,29 +2,30 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#667eea">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Number Chase - Беги от 69!</title>
-    
+    <title>Number Chase</title>
     <style>
-        /* Базовые стили для предотвращения сбоев загрузки */
-        body {
+        /* Базовые стили */
+        * {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            background: #1a1a2e;
-            font-family: Arial, sans-serif;
+            box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a2e;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
         }
         
         .screen {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
@@ -43,22 +44,127 @@
             display: block;
             width: 100%;
             height: 100%;
+            background: #1a1a2e;
+        }
+        
+        /* Меню */
+        .menu-content {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2em;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin: 1em;
+            color: white;
+        }
+        
+        .menu-content h1 {
+            font-size: 2em;
+            margin-bottom: 0.5em;
+        }
+        
+        .menu-btn {
+            padding: 1em 2em;
+            font-size: 1.1em;
+            background: #ff6b6b;
+            border: none;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            margin: 0.5em;
+            width: 200px;
+            display: block;
+        }
+        
+        /* HUD */
+        #gameHUD {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .hud-top {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            font-size: 1em;
+        }
+        
+        .health-indicators {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .health-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .health-indicator.active {
+            background: #feca57;
+        }
+        
+        /* Управление */
+        #touchControls {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            height: 100px;
+            pointer-events: none;
+        }
+        
+        .touch-area {
+            position: absolute;
+            left: 10px;
+            bottom: 0;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            pointer-events: auto;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .action-buttons {
+            position: absolute;
+            right: 10px;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: auto;
+        }
+        
+        .action-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            font-size: 1.5em;
+            cursor: pointer;
         }
     </style>
-    
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/mobile.css">
 </head>
 <body>
     <div id="gameContainer">
         <!-- Экран загрузки -->
         <div id="loadingScreen" class="screen">
-            <div class="loading-content">
+            <div class="menu-content">
                 <h1>NUMBER CHASE</h1>
-                <div class="loading-bar">
-                    <div class="loading-progress"></div>
-                </div>
-                <p id="loadingText">Загрузка игры...</p>
+                <div id="loadingStatus">Загрузка...</div>
+                <button class="menu-btn" onclick="skipLoading()">Пропустить загрузку</button>
             </div>
         </div>
 
@@ -66,18 +172,23 @@
         <div id="mainMenu" class="screen hidden">
             <div class="menu-content">
                 <h1>NUMBER CHASE</h1>
-                <p class="game-description">Беги от числа 69! Собирай барьеры для защиты!</p>
-                
-                <div class="menu-buttons">
-                    <button id="startBtn" class="menu-btn">Начать игру</button>
-                    <button id="settingsBtn" class="menu-btn">Настройки</button>
-                </div>
+                <p style="margin-bottom: 1em; color: rgba(255,255,255,0.8);">Беги от числа 69!</p>
+                <button class="menu-btn" onclick="startGame()">Начать игру</button>
+                <button class="menu-btn" onclick="showInstructions()">Как играть</button>
+            </div>
+        </div>
 
-                <div class="controls-info">
-                    <h3>Управление:</h3>
-                    <p>• Перетаскивание в левой области - движение</p>
-                    <p>• Правая кнопка - активация барьера</p>
+        <!-- Инструкции -->
+        <div id="instructionsScreen" class="screen hidden">
+            <div class="menu-content">
+                <h1>КАК ИГРАТЬ</h1>
+                <div style="text-align: left; margin: 1em 0;">
+                    <p>• Перетаскивайте палец в левой области для движения</p>
+                    <p>• Нажимайте правую кнопку для активации барьера</p>
+                    <p>• Собирайте желтые щиты для защиты</p>
+                    <p>• Бегите от числа 69!</p>
                 </div>
+                <button class="menu-btn" onclick="showMainMenu()">Назад</button>
             </div>
         </div>
 
@@ -85,7 +196,6 @@
         <div id="gameScreen" class="screen hidden">
             <canvas id="gameCanvas"></canvas>
             
-            <!-- Игровой HUD -->
             <div id="gameHUD">
                 <div class="hud-top">
                     <div class="score-display">
@@ -99,133 +209,396 @@
                     </div>
                 </div>
                 
-                <div class="hud-bottom">
-                    <button id="pauseBtn" class="hud-btn">⏸️</button>
-                </div>
-
                 <div id="touchControls">
                     <div class="touch-area" id="moveArea"></div>
                     <div class="action-buttons">
-                        <button id="useBarrier" class="action-btn">🛡️</button>
+                        <button class="action-btn" id="useBarrier">🛡️</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Экран паузы -->
-        <div id="pauseScreen" class="screen hidden">
-            <div class="pause-content">
-                <h2>ПАУЗА</h2>
-                <div class="pause-buttons">
-                    <button id="resumeBtn" class="menu-btn">Продолжить</button>
-                    <button id="menuFromPause" class="menu-btn">В меню</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Экран Game Over -->
+        <!-- Game Over -->
         <div id="gameOverScreen" class="screen hidden">
-            <div class="gameover-content">
-                <h2>GAME OVER</h2>
-                <div class="final-stats">
-                    <p>Ваше время: <span id="finalTime">0</span></p>
-                </div>
-                <div class="gameover-buttons">
-                    <button id="playAgainBtn" class="menu-btn">Играть снова</button>
-                    <button id="menuFromGameOver" class="menu-btn">В меню</button>
-                </div>
+            <div class="menu-content">
+                <h1>GAME OVER</h1>
+                <p>Время: <span id="finalTime">0</span></p>
+                <button class="menu-btn" onclick="restartGame()">Играть снова</button>
+                <button class="menu-btn" onclick="showMainMenu()">В меню</button>
             </div>
         </div>
     </div>
 
-    <!-- Аудио элементы с fallback -->
-    <audio id="bgMusic" loop preload="none">
-        <source src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAABAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAABQTEFNRTMuMTAwBKkAAAAAAAAAADUgJAOHQQAB9AAACGDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//tQxAAAAAAAAAAAAAAAAAAAAAAAASAAAAAAA" type="audio/mpeg">
-    </audio>
-
-    <!-- Загружаем скрипты в правильном порядке -->
     <script>
-        // Проверка мобильного устройства
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        console.log('Mobile device:', isMobile);
+        // Глобальные переменные
+        let game = null;
+        let gameTime = 0;
+        let gameInterval = null;
+        let player = { x: 0, y: 0, barriers: 0 };
+        let enemy = { x: 0, y: 0 };
+        let barriers = [];
         
-        // Функция для отслеживания загрузки
-        window.gameLoaded = false;
+        // Константы игры
+        const GameConstants = {
+            PLAYER_SIZE: 15,
+            ENEMY_SIZE: 30,
+            BARRIER_SIZE: 10,
+            PLAYER_SPEED: 3
+        };
         
-        // Показываем прогресс загрузки
-        const loadingText = document.getElementById('loadingText');
-        const loadingProgress = document.querySelector('.loading-progress');
-        let loadProgress = 0;
+        // Функции навигации
+        function skipLoading() {
+            showMainMenu();
+        }
         
-        const progressInterval = setInterval(() => {
-            loadProgress += Math.random() * 20;
-            if (loadProgress >= 100) {
-                loadProgress = 100;
-                clearInterval(progressInterval);
-                loadingText.textContent = 'Готово!';
-                setTimeout(() => {
-                    if (!window.gameLoaded) {
-                        // Принудительный переход к меню если игра не загрузилась
-                        document.getElementById('loadingScreen').classList.add('hidden');
-                        document.getElementById('mainMenu').classList.remove('hidden');
-                    }
-                }, 1000);
-            }
-            loadingProgress.style.width = loadProgress + '%';
-            loadingText.textContent = `Загрузка... ${Math.floor(loadProgress)}%`;
-        }, 200);
-    </script>
-
-    <script src="js/utils.js"></script>
-    <script src="js/player.js"></script>
-    <script src="js/enemy.js"></script>
-    <script src="js/barrier.js"></script>
-    <script src="js/game.js"></script>
-    
-    <script>
-        // Инициализация игры после загрузки страницы
-        window.addEventListener('load', function() {
-            console.log('Page loaded, initializing game...');
+        function showMainMenu() {
+            hideAllScreens();
+            document.getElementById('mainMenu').classList.remove('hidden');
+        }
+        
+        function showInstructions() {
+            hideAllScreens();
+            document.getElementById('instructionsScreen').classList.remove('hidden');
+        }
+        
+        function hideAllScreens() {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+        }
+        
+        // Инициализация игры
+        function startGame() {
+            console.log('Starting game...');
+            hideAllScreens();
+            document.getElementById('gameScreen').classList.remove('hidden');
             
-            try {
-                const game = new Game();
-                window.gameInstance = game;
-                window.gameLoaded = true;
+            initializeGame();
+            startGameLoop();
+        }
+        
+        function initializeGame() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Установка размеров canvas
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Инициализация игровых объектов
+            player = {
+                x: canvas.width / 2,
+                y: canvas.height / 2,
+                size: GameConstants.PLAYER_SIZE,
+                color: '#48dbfb',
+                barriers: 0,
+                speed: GameConstants.PLAYER_SPEED
+            };
+            
+            enemy = {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: GameConstants.ENEMY_SIZE,
+                color: '#ff6b6b',
+                speed: 2
+            };
+            
+            barriers = [];
+            
+            // Инициализация управления
+            initControls();
+            
+            console.log('Game initialized');
+        }
+        
+        function initControls() {
+            const touchArea = document.getElementById('moveArea');
+            const barrierBtn = document.getElementById('useBarrier');
+            let isMoving = false;
+            let moveX = 0;
+            let moveY = 0;
+            
+            // Touch события для движения
+            touchArea.addEventListener('touchstart', handleTouch);
+            touchArea.addEventListener('touchmove', handleTouch);
+            touchArea.addEventListener('touchend', stopMove);
+            
+            // Mouse события для десктопа
+            touchArea.addEventListener('mousedown', handleMouse);
+            touchArea.addEventListener('mousemove', handleMouse);
+            touchArea.addEventListener('mouseup', stopMove);
+            touchArea.addEventListener('mouseleave', stopMove);
+            
+            // Кнопка барьера
+            barrierBtn.addEventListener('click', useBarrier);
+            barrierBtn.addEventListener('touchstart', useBarrier);
+            
+            function handleTouch(e) {
+                e.preventDefault();
+                const rect = touchArea.getBoundingClientRect();
+                const touch = e.touches[0];
+                calculateMovement(touch.clientX - rect.left, touch.clientY - rect.top);
+            }
+            
+            function handleMouse(e) {
+                if (e.buttons === 1) {
+                    const rect = touchArea.getBoundingClientRect();
+                    calculateMovement(e.clientX - rect.left, e.clientY - rect.top);
+                }
+            }
+            
+            function calculateMovement(x, y) {
+                const centerX = 50;
+                const centerY = 50;
                 
-                // Скрываем экран загрузки
-                setTimeout(() => {
-                    document.getElementById('loadingScreen').classList.add('hidden');
-                    document.getElementById('mainMenu').classList.remove('hidden');
-                    console.log('Game initialized successfully');
-                }, 500);
+                moveX = (x - centerX) / 50;
+                moveY = (y - centerY) / 50;
                 
-            } catch (error) {
-                console.error('Game initialization failed:', error);
-                // Fallback - показываем меню даже при ошибке
+                // Ограничение скорости
+                const length = Math.sqrt(moveX * moveX + moveY * moveY);
+                if (length > 1) {
+                    moveX /= length;
+                    moveY /= length;
+                }
+                
+                isMoving = true;
+            }
+            
+            function stopMove() {
+                isMoving = false;
+                moveX = 0;
+                moveY = 0;
+            }
+            
+            // Сохраняем состояние движения для игрового цикла
+            window.gameMoveState = { isMoving, moveX, moveY };
+            
+            setInterval(() => {
+                window.gameMoveState = { isMoving, moveX, moveY };
+            }, 16);
+        }
+        
+        function useBarrier() {
+            if (player.barriers > 0) {
+                player.barriers--;
+                updateHealthDisplay();
+                // Эффект барьера - 3 секунды неуязвимости
+                player.invulnerable = 180;
+            }
+        }
+        
+        function updateHealthDisplay() {
+            const indicators = document.querySelectorAll('.health-indicator');
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index < player.barriers);
+            });
+        }
+        
+        // Игровой цикл
+        function startGameLoop() {
+            gameTime = 0;
+            updateTimer();
+            
+            gameInterval = setInterval(() => {
+                updateGame();
+                renderGame();
+                gameTime += 1/60;
+                
+                if (Math.floor(gameTime) % 1 === 0) {
+                    updateTimer();
+                }
+            }, 16); // ~60 FPS
+        }
+        
+        function updateGame() {
+            const canvas = document.getElementById('gameCanvas');
+            
+            // Движение игрока
+            if (window.gameMoveState && window.gameMoveState.isMoving) {
+                player.x += window.gameMoveState.moveX * player.speed;
+                player.y += window.gameMoveState.moveY * player.speed;
+                
+                // Границы
+                player.x = Math.max(player.size, Math.min(player.x, canvas.width - player.size));
+                player.y = Math.max(player.size, Math.min(player.y, canvas.height - player.size));
+            }
+            
+            // Движение врага
+            const dx = player.x - enemy.x;
+            const dy = player.y - enemy.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance > 0) {
+                enemy.x += (dx / distance) * enemy.speed;
+                enemy.y += (dy / distance) * enemy.speed;
+            }
+            
+            // Спавн барьеров
+            if (Math.random() < 0.01 && barriers.length < 5) {
+                barriers.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: GameConstants.BARRIER_SIZE,
+                    color: '#feca57'
+                });
+            }
+            
+            // Коллекция барьеров
+            for (let i = barriers.length - 1; i >= 0; i--) {
+                const barrier = barriers[i];
+                const dist = Math.sqrt(
+                    Math.pow(player.x - barrier.x, 2) + 
+                    Math.pow(player.y - barrier.y, 2)
+                );
+                
+                if (dist < player.size + barrier.size && player.barriers < 3) {
+                    player.barriers++;
+                    barriers.splice(i, 1);
+                    updateHealthDisplay();
+                }
+            }
+            
+            // Проверка столкновения с врагом
+            if (!player.invulnerable) {
+                const distToEnemy = Math.sqrt(
+                    Math.pow(player.x - enemy.x, 2) + 
+                    Math.pow(player.y - enemy.y, 2)
+                );
+                
+                if (distToEnemy < player.size + enemy.size) {
+                    gameOver();
+                }
+            }
+            
+            // Уменьшение времени неуязвимости
+            if (player.invulnerable) {
+                player.invulnerable--;
+            }
+            
+            // Увеличение сложности
+            if (gameTime > 30) {
+                enemy.speed = 2 + (gameTime - 30) / 30;
+            }
+        }
+        
+        function renderGame() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Очистка
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Сетка
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 50) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 50) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Барьеры
+            barriers.forEach(barrier => {
+                ctx.fillStyle = barrier.color;
+                ctx.beginPath();
+                ctx.arc(barrier.x, barrier.y, barrier.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Иконка щита
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.moveTo(barrier.x, barrier.y - barrier.size * 0.6);
+                ctx.lineTo(barrier.x + barrier.size * 0.4, barrier.y - barrier.size * 0.2);
+                ctx.lineTo(barrier.x + barrier.size * 0.4, barrier.y + barrier.size * 0.4);
+                ctx.lineTo(barrier.x - barrier.size * 0.4, barrier.y + barrier.size * 0.4);
+                ctx.lineTo(barrier.x - barrier.size * 0.4, barrier.y - barrier.size * 0.2);
+                ctx.closePath();
+                ctx.fill();
+            });
+            
+            // Игрок
+            ctx.fillStyle = player.invulnerable ? '#ffffff' : player.color;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Лицо игрока
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(player.x - 4, player.y - 3, 3, 0, Math.PI * 2);
+            ctx.arc(player.x + 4, player.y - 3, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(player.x, player.y + 4, 2, 0, Math.PI);
+            ctx.stroke();
+            
+            // Враг (число 69)
+            ctx.fillStyle = enemy.color;
+            ctx.beginPath();
+            ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold ' + (enemy.size * 0.8) + 'px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('69', enemy.x, enemy.y);
+            
+            // Глаза врага
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.arc(enemy.x - enemy.size * 0.3, enemy.y - enemy.size * 0.2, enemy.size * 0.1, 0, Math.PI * 2);
+            ctx.arc(enemy.x + enemy.size * 0.3, enemy.y - enemy.size * 0.2, enemy.size * 0.1, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function updateTimer() {
+            const minutes = Math.floor(gameTime / 60);
+            const seconds = Math.floor(gameTime % 60);
+            document.getElementById('timer').textContent = 
+                minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+        }
+        
+        function gameOver() {
+            clearInterval(gameInterval);
+            document.getElementById('finalTime').textContent = document.getElementById('timer').textContent;
+            hideAllScreens();
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+        }
+        
+        function restartGame() {
+            clearInterval(gameInterval);
+            startGame();
+        }
+        
+        // Автоматический запуск
+        window.addEventListener('load', function() {
+            console.log('Page loaded');
+            
+            // Показываем меню через 1 секунду
+            setTimeout(() => {
                 document.getElementById('loadingScreen').classList.add('hidden');
                 document.getElementById('mainMenu').classList.remove('hidden');
-                
-                // Показываем сообщение об ошибке
-                const menuContent = document.querySelector('.menu-content');
-                const errorMsg = document.createElement('div');
-                errorMsg.style.cssText = 'color: #ff6b6b; margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 5px;';
-                errorMsg.textContent = 'Ошибка загрузки, но меню доступно';
-                menuContent.appendChild(errorMsg);
-            }
+            }, 1000);
         });
-
-        // Предотвращение масштабирования на мобильных
+        
+        // Предотвращение масштабирования
         document.addEventListener('touchstart', function(e) {
             if (e.touches.length > 1) {
                 e.preventDefault();
             }
         }, { passive: false });
-
+        
         document.addEventListener('gesturestart', function(e) {
-            e.preventDefault();
-        });
-
-        document.addEventListener('gesturechange', function(e) {
             e.preventDefault();
         });
     </script>
