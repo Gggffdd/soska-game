@@ -1,6 +1,14 @@
 class Game {
     constructor() {
+        console.log('Game constructor called');
+        
         this.canvas = document.getElementById('gameCanvas');
+        if (!this.canvas) {
+            console.error('Canvas not found!');
+            this.showErrorScreen('Canvas not found');
+            return;
+        }
+        
         this.ctx = this.canvas.getContext('2d');
         this.state = new GameState();
         
@@ -8,40 +16,85 @@ class Game {
         this.difficulty = 'medium';
         this.effects = [];
         this.sounds = {};
-        this.fps = 60;
+        this.isInitialized = false;
         
         // Настройки камеры
         this.camera = {
             x: 0,
             y: 0,
-            zoom: 0.7,
-            targetZoom: 0.7
+            zoom: 0.7
         };
         
-        this.initializeGame();
-        this.setupEventListeners();
-        this.startLoading();
+        try {
+            this.initializeGame();
+            this.setupEventListeners();
+            this.isInitialized = true;
+            console.log('Game initialized successfully');
+        } catch (error) {
+            console.error('Game initialization failed:', error);
+            this.showErrorScreen('Initialization failed: ' + error.message);
+        }
+    }
+
+    showErrorScreen(message) {
+        const loadingScreen = document.getElementById('loadingScreen');
+        if (loadingScreen) {
+            loadingScreen.innerHTML = `
+                <div style="text-align: center; color: white;">
+                    <h1>ERROR</h1>
+                    <p>${message}</p>
+                    <button onclick="location.reload()" style="padding: 10px 20px; margin: 10px; background: #ff6b6b; border: none; border-radius: 5px; color: white; cursor: pointer;">
+                        Reload Page
+                    </button>
+                </div>
+            `;
+        }
     }
 
     initializeGame() {
+        console.log('Initializing game components...');
+        
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
 
+        // Инициализация игровых объектов
         this.player = new Player(this);
         this.enemy = new Enemy(this);
         this.barrierManager = new BarrierManager(this);
 
         this.initializeSounds();
         this.loadSettings();
+        
+        // Принудительный переход к меню через 3 секунды максимум
+        setTimeout(() => {
+            if (document.getElementById('loadingScreen') && 
+                !document.getElementById('loadingScreen').classList.contains('hidden')) {
+                this.showMainMenu();
+            }
+        }, 3000);
     }
 
     resizeCanvas() {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
+        if (!this.canvas) return;
+        
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        
+        // Устанавливаем размеры с учетом DPI
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = width * dpr;
+        this.canvas.height = height * dpr;
+        this.canvas.style.width = width + 'px';
+        this.canvas.style.height = height + 'px';
+        
+        // Масштабируем контекст
+        this.ctx.scale(dpr, dpr);
         
         // Большой игровой мир
-        GameConstants.CANVAS_WIDTH = Math.max(1200, this.canvas.width * 1.5);
-        GameConstants.CANVAS_HEIGHT = Math.max(1200, this.canvas.height * 1.5);
+        GameConstants.CANVAS_WIDTH = Math.max(1200, width * 1.5);
+        GameConstants.CANVAS_HEIGHT = Math.max(1200, height * 1.5);
+        
+        console.log('Canvas resized to:', width, height);
     }
 
     initializeSounds() {
@@ -52,49 +105,54 @@ class Game {
             collect: document.getElementById('collectSound')
         };
 
-        // Базовые настройки звука
+        // Настройка звуков
         Object.values(this.sounds).forEach(sound => {
             if (sound) {
                 sound.volume = 0.5;
+                sound.preload = 'auto';
             }
         });
     }
 
     setupEventListeners() {
-        // Кнопки меню
-        document.getElementById('startBtn').addEventListener('click', () => this.startGame());
-        document.getElementById('settingsBtn').addEventListener('click', () => this.showSettings());
-        document.getElementById('statsBtn').addEventListener('click', () => this.showStats());
-        document.getElementById('pauseBtn').addEventListener('click', () => this.togglePause());
-        document.getElementById('useBarrier').addEventListener('click', () => this.useBarrier());
-
-        // Навигация
-        document.getElementById('backToMenu').addEventListener('click', () => this.showMainMenu());
-        document.getElementById('saveSettings').addEventListener('click', () => this.saveSettings());
-        document.getElementById('backFromStats').addEventListener('click', () => this.showMainMenu());
-
-        // Пауза
-        document.getElementById('resumeBtn').addEventListener('click', () => this.resumeGame());
-        document.getElementById('restartBtn').addEventListener('click', () => this.restartGame());
-        document.getElementById('menuFromPause').addEventListener('click', () => this.showMainMenu());
-
-        // Game Over
-        document.getElementById('playAgainBtn').addEventListener('click', () => this.restartGame());
-        document.getElementById('menuFromGameOver').addEventListener('click', () => this.showMainMenu());
+        console.log('Setting up event listeners...');
+        
+        // Основные кнопки меню
+        this.setupButton('startBtn', () => this.startGame());
+        this.setupButton('settingsBtn', () => this.showSettings());
+        this.setupButton('pauseBtn', () => this.togglePause());
+        this.setupButton('useBarrier', () => this.useBarrier());
+        
+        // Кнопки навигации
+        this.setupButton('resumeBtn', () => this.resumeGame());
+        this.setupButton('menuFromPause', () => this.showMainMenu());
+        this.setupButton('playAgainBtn', () => this.restartGame());
+        this.setupButton('menuFromGameOver', () => this.showMainMenu());
+        this.setupButton('backToMenu', () => this.showMainMenu());
+        this.setupButton('saveSettings', () => this.saveSettings());
+        this.setupButton('statsBtn', () => this.showStats());
+        this.setupButton('backFromStats', () => this.showMainMenu());
 
         // Настройки
-        document.getElementById('soundVolume').addEventListener('input', (e) => {
-            document.getElementById('volumeValue').textContent = e.target.value + '%';
-        });
-
-        document.getElementById('gameDifficulty').addEventListener('change', (e) => {
-            this.difficulty = e.target.value;
-        });
+        const soundVolume = document.getElementById('soundVolume');
+        const gameDifficulty = document.getElementById('gameDifficulty');
+        
+        if (soundVolume) {
+            soundVolume.addEventListener('input', (e) => {
+                document.getElementById('volumeValue').textContent = e.target.value + '%';
+            });
+        }
+        
+        if (gameDifficulty) {
+            gameDifficulty.addEventListener('change', (e) => {
+                this.difficulty = e.target.value;
+            });
+        }
 
         // Клавиатура
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
 
-        // Свайп для паузы
+        // Touch события для паузы
         let startY;
         this.canvas.addEventListener('touchstart', (e) => {
             startY = e.touches[0].clientY;
@@ -108,6 +166,17 @@ class Game {
 
         // Предотвращение контекстного меню
         this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+        
+        console.log('Event listeners setup complete');
+    }
+
+    setupButton(id, handler) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('click', handler);
+        } else {
+            console.warn('Button not found:', id);
+        }
     }
 
     handleKeyDown(e) {
@@ -120,28 +189,20 @@ class Game {
         }
     }
 
-    startLoading() {
-        const loadingProgress = document.querySelector('.loading-progress');
-        let progress = 0;
-        
-        const loadingInterval = setInterval(() => {
-            progress += Math.random() * 15;
-            if (progress >= 100) {
-                progress = 100;
-                clearInterval(loadingInterval);
-                setTimeout(() => {
-                    this.showMainMenu();
-                }, 500);
-            }
-            loadingProgress.style.width = progress + '%';
-        }, 100);
-    }
-
     showScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.add('hidden');
-        });
-        document.getElementById(screenId).classList.remove('hidden');
+        try {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.add('hidden');
+            });
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) {
+                targetScreen.classList.remove('hidden');
+            } else {
+                console.error('Screen not found:', screenId);
+            }
+        } catch (error) {
+            console.error('Error showing screen:', error);
+        }
     }
 
     showMainMenu() {
@@ -163,6 +224,12 @@ class Game {
     }
 
     startGame() {
+        if (!this.isInitialized) {
+            console.error('Game not initialized');
+            return;
+        }
+        
+        console.log('Starting game...');
         this.showScreen('gameScreen');
         this.state.setState(GameState.STATES.PLAYING);
         
@@ -170,9 +237,15 @@ class Game {
         this.gameLoop();
         
         // Фоновая музыка
-        if (this.settings.soundEnabled) {
-            this.sounds.bgMusic.volume = this.settings.soundVolume / 100;
-            this.sounds.bgMusic.play().catch(e => console.log('Music auto-play blocked'));
+        if (this.settings.soundEnabled && this.sounds.bgMusic) {
+            try {
+                this.sounds.bgMusic.volume = this.settings.soundVolume / 100;
+                this.sounds.bgMusic.play().catch(e => {
+                    console.log('Background music play failed:', e);
+                });
+            } catch (error) {
+                console.log('Sound error:', error);
+            }
         }
     }
 
@@ -188,8 +261,12 @@ class Game {
         this.showScreen('pauseScreen');
         this.state.setState(GameState.STATES.PAUSED);
         
-        document.getElementById('pauseTime').textContent = Utils.formatTime(this.gameTime);
-        document.getElementById('pauseBarriers').textContent = this.player.barriers;
+        // Обновление статистики на экране паузы
+        const pauseTime = document.getElementById('pauseTime');
+        const pauseBarriers = document.getElementById('pauseBarriers');
+        
+        if (pauseTime) pauseTime.textContent = Utils.formatTime(this.gameTime);
+        if (pauseBarriers) pauseBarriers.textContent = this.player.barriers;
     }
 
     resumeGame() {
@@ -203,18 +280,26 @@ class Game {
         this.state.setState(GameState.STATES.GAME_OVER);
         
         // Обновление статистики
-        document.getElementById('finalTime').textContent = Utils.formatTime(this.gameTime);
-        document.getElementById('finalBarriers').textContent = this.player.barriers;
+        const finalTime = document.getElementById('finalTime');
+        const finalBarriers = document.getElementById('finalBarriers');
+        const bestTime = document.getElementById('bestTime');
         
-        const bestTime = Utils.getStorage('bestTime', 0);
-        if (this.gameTime > bestTime) {
+        if (finalTime) finalTime.textContent = Utils.formatTime(this.gameTime);
+        if (finalBarriers) finalBarriers.textContent = this.player.barriers;
+        
+        const storedBestTime = Utils.getStorage('bestTime', 0);
+        if (this.gameTime > storedBestTime) {
             Utils.setStorage('bestTime', this.gameTime);
         }
-        document.getElementById('bestTime').textContent = Utils.formatTime(bestTime);
+        if (bestTime) bestTime.textContent = Utils.formatTime(storedBestTime);
         
         this.updateStatistics();
+        
+        // Звук и вибрация
         Utils.playSound(this.sounds.gameOver);
-        Utils.vibrate([200, 100, 200]);
+        if (this.settings.vibration) {
+            Utils.vibrate([200, 100, 200]);
+        }
         
         this.stopGame();
     }
@@ -237,8 +322,10 @@ class Game {
     }
 
     stopGame() {
-        this.sounds.bgMusic.pause();
-        this.sounds.bgMusic.currentTime = 0;
+        if (this.sounds.bgMusic) {
+            this.sounds.bgMusic.pause();
+            this.sounds.bgMusic.currentTime = 0;
+        }
     }
 
     useBarrier() {
@@ -246,13 +333,18 @@ class Game {
             if (this.player.useBarrier()) {
                 this.updateHUD();
             } else {
-                Utils.vibrate([50]);
+                if (this.settings.vibration) {
+                    Utils.vibrate([50]);
+                }
             }
         }
     }
 
     updateHUD() {
-        document.getElementById('timer').textContent = Utils.formatTime(this.gameTime);
+        const timer = document.getElementById('timer');
+        if (timer) {
+            timer.textContent = Utils.formatTime(this.gameTime);
+        }
         
         // Обновление индикаторов здоровья
         const healthIndicators = document.querySelectorAll('.health-indicator');
@@ -268,42 +360,59 @@ class Game {
     gameLoop() {
         if (!this.state.is(GameState.STATES.PLAYING)) return;
 
-        this.update();
-        this.render();
-        
-        requestAnimationFrame(() => this.gameLoop());
+        try {
+            this.update();
+            this.render();
+            requestAnimationFrame(() => this.gameLoop());
+        } catch (error) {
+            console.error('Error in game loop:', error);
+            this.showMainMenu();
+        }
     }
 
     update() {
-        this.gameTime += 1/60;
+        try {
+            // Обновление времени игры
+            this.gameTime += 1/60;
 
-        // Обновление HUD каждую секунду
-        if (Math.floor(this.gameTime * 60) % 60 === 0) {
-            this.updateHUD();
-        }
+            // Обновление HUD каждую секунду
+            if (Math.floor(this.gameTime * 60) % 60 === 0) {
+                this.updateHUD();
+            }
 
-        this.player.update();
-        this.enemy.update(this.player);
-        this.barrierManager.update(this.player);
-        this.updateEffects();
-        this.updateCamera();
+            // Обновление игровых объектов
+            this.player.update();
+            this.enemy.update(this.player);
+            this.barrierManager.update(this.player);
+            this.updateEffects();
+            this.updateCamera();
 
-        // Проверка столкновения
-        if (this.enemy.checkCollision(this.player)) {
-            this.gameOver();
-        }
+            // Проверка столкновения
+            if (this.enemy.checkCollision(this.player)) {
+                this.gameOver();
+                return;
+            }
 
-        // Увеличение сложности со временем
-        if (this.gameTime > 30) {
-            const speedMultiplier = 1 + (this.gameTime - 30) / 120;
-            this.enemy.speed = GameConstants.DIFFICULTY[this.difficulty].enemySpeed * speedMultiplier;
+            // Увеличение сложности со временем
+            if (this.gameTime > 30) {
+                const speedMultiplier = 1 + (this.gameTime - 30) / 120;
+                this.enemy.speed = GameConstants.DIFFICULTY[this.difficulty].enemySpeed * speedMultiplier;
+            }
+        } catch (error) {
+            console.error('Error in update:', error);
+            throw error;
         }
     }
 
     updateEffects() {
         for (let i = this.effects.length - 1; i >= 0; i--) {
-            this.effects[i].update();
-            if (this.effects[i].isDead()) {
+            try {
+                this.effects[i].update();
+                if (this.effects[i].isDead()) {
+                    this.effects.splice(i, 1);
+                }
+            } catch (error) {
+                console.error('Error updating effect:', error);
                 this.effects.splice(i, 1);
             }
         }
@@ -316,36 +425,46 @@ class Game {
         this.camera.x = playerPos.x - this.canvas.width / (2 * this.camera.zoom);
         this.camera.y = playerPos.y - this.canvas.height / (2 * this.camera.zoom);
         
-        // Ограничение камеры
+        // Ограничение камеры в пределах игрового мира
         const maxX = GameConstants.CANVAS_WIDTH - this.canvas.width / this.camera.zoom;
         const maxY = GameConstants.CANVAS_HEIGHT - this.canvas.height / this.camera.zoom;
         
         this.camera.x = Utils.clamp(this.camera.x, 0, maxX);
         this.camera.y = Utils.clamp(this.camera.y, 0, maxY);
-        
-        // Плавное изменение зума
-        this.camera.zoom = Utils.lerp(this.camera.zoom, this.camera.targetZoom, 0.1);
     }
 
     render() {
-        // Очистка canvas
-        this.ctx.fillStyle = '#1a1a2e';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        try {
+            // Очистка canvas
+            this.ctx.fillStyle = '#1a1a2e';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        this.ctx.save();
-        
-        // Применение трансформаций камеры
-        this.ctx.scale(this.camera.zoom, this.camera.zoom);
-        this.ctx.translate(-this.camera.x, -this.camera.y);
+            this.ctx.save();
+            
+            // Применение трансформаций камеры
+            this.ctx.scale(this.camera.zoom, this.camera.zoom);
+            this.ctx.translate(-this.camera.x, -this.camera.y);
 
-        // Отрисовка игрового мира
-        this.drawBackground();
-        this.barrierManager.draw();
-        this.player.draw();
-        this.enemy.draw();
-        this.effects.forEach(effect => effect.draw(this.ctx));
+            // Отрисовка игрового мира
+            this.drawBackground();
+            this.barrierManager.draw();
+            this.player.draw();
+            this.enemy.draw();
+            
+            // Отрисовка эффектов
+            this.effects.forEach(effect => {
+                try {
+                    effect.draw(this.ctx);
+                } catch (error) {
+                    console.error('Error drawing effect:', error);
+                }
+            });
 
-        this.ctx.restore();
+            this.ctx.restore();
+        } catch (error) {
+            console.error('Error in render:', error);
+            throw error;
+        }
     }
 
     drawBackground() {
@@ -391,18 +510,32 @@ class Game {
     }
 
     loadSettingsToUI() {
-        document.getElementById('soundVolume').value = this.settings.soundVolume;
-        document.getElementById('volumeValue').textContent = this.settings.soundVolume + '%';
-        document.getElementById('gameDifficulty').value = this.settings.difficulty;
-        document.getElementById('vibration').checked = this.settings.vibration;
+        const soundVolume = document.getElementById('soundVolume');
+        const volumeValue = document.getElementById('volumeValue');
+        const gameDifficulty = document.getElementById('gameDifficulty');
+        const vibration = document.getElementById('vibration');
+        
+        if (soundVolume) soundVolume.value = this.settings.soundVolume;
+        if (volumeValue) volumeValue.textContent = this.settings.soundVolume + '%';
+        if (gameDifficulty) gameDifficulty.value = this.settings.difficulty;
+        if (vibration) vibration.checked = this.settings.vibration;
     }
 
     saveSettings() {
+        const soundVolume = document.getElementById('soundVolume');
+        const gameDifficulty = document.getElementById('gameDifficulty');
+        const vibration = document.getElementById('vibration');
+        
+        if (!soundVolume || !gameDifficulty || !vibration) {
+            console.error('Settings elements not found');
+            return;
+        }
+        
         this.settings = {
-            soundVolume: parseInt(document.getElementById('soundVolume').value),
+            soundVolume: parseInt(soundVolume.value),
             soundEnabled: true,
-            vibration: document.getElementById('vibration').checked,
-            difficulty: document.getElementById('gameDifficulty').value
+            vibration: vibration.checked,
+            difficulty: gameDifficulty.value
         };
         
         Utils.setStorage('gameSettings', this.settings);
@@ -410,7 +543,9 @@ class Game {
         this.enemy.setDifficulty(this.difficulty);
         
         // Применение настроек звука
-        this.sounds.bgMusic.volume = this.settings.soundVolume / 100;
+        if (this.sounds.bgMusic) {
+            this.sounds.bgMusic.volume = this.settings.soundVolume / 100;
+        }
         
         this.showMainMenu();
     }
@@ -423,9 +558,13 @@ class Game {
             totalBarriers: 0
         });
         
-        document.getElementById('statBestTime').textContent = Utils.formatTime(stats.bestTime);
-        document.getElementById('statTotalGames').textContent = stats.totalGames;
-        document.getElementById('statTotalBarriers').textContent = stats.totalBarriers;
+        const statBestTime = document.getElementById('statBestTime');
+        const statTotalGames = document.getElementById('statTotalGames');
+        const statTotalBarriers = document.getElementById('statTotalBarriers');
+        
+        if (statBestTime) statBestTime.textContent = Utils.formatTime(stats.bestTime);
+        if (statTotalGames) statTotalGames.textContent = stats.totalGames;
+        if (statTotalBarriers) statTotalBarriers.textContent = stats.totalBarriers;
     }
 
     updateStatistics() {
@@ -446,8 +585,44 @@ class Game {
     }
 }
 
-// Инициализация игры
-window.addEventListener('load', () => {
-    const game = new Game();
-    window.game = game;
+// Автоматическая инициализация при загрузке страницы
+window.addEventListener('load', function() {
+    console.log('Page fully loaded, initializing game...');
+    
+    // Небольшая задержка для гарантии загрузки DOM
+    setTimeout(() => {
+        try {
+            if (!window.gameInstance) {
+                window.gameInstance = new Game();
+                console.log('Game instance created successfully');
+                
+                // Скрываем экран загрузки через 2 секунды максимум
+                setTimeout(() => {
+                    const loadingScreen = document.getElementById('loadingScreen');
+                    const mainMenu = document.getElementById('mainMenu');
+                    
+                    if (loadingScreen && !loadingScreen.classList.contains('hidden') && 
+                        mainMenu && mainMenu.classList.contains('hidden')) {
+                        window.gameInstance.showMainMenu();
+                    }
+                }, 2000);
+            }
+        } catch (error) {
+            console.error('Failed to create game instance:', error);
+            
+            // Fallback - показываем меню даже при ошибке
+            const loadingScreen = document.getElementById('loadingScreen');
+            const mainMenu = document.getElementById('mainMenu');
+            
+            if (loadingScreen && mainMenu) {
+                loadingScreen.classList.add('hidden');
+                mainMenu.classList.remove('hidden');
+            }
+        }
+    }, 100);
+});
+
+// Глобальный обработчик ошибок
+window.addEventListener('error', function(e) {
+    console.error('Global error:', e.error);
 });
