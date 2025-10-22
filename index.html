@@ -646,7 +646,7 @@
                         </div>
                         <div class="stat-item">
                             <span>🎯 Дистанция: </span>
-                            <span id="distance" class="stat_value">0</span>
+                            <span id="distance" class="stat-value">0</span>
                         </div>
                         <div class="stat-item">
                             <span>⭐ Уровень: </span>
@@ -757,7 +757,8 @@
             speed: GameConstants.PLAYER_SPEED, maxBarriers: 3, level: 1, xp: 0,
             powerups: { speed: 0, slow: 0, magnet: 0, shield: 0 }, combo: 1, comboTimeout: 0,
             totalDistance: 0, upgrades: { speed: 1, barrier: 1, magnet: 0 },
-            upgradePoints: 0, isInvulnerable: false, color: '#48dbfb', size: GameConstants.PLAYER_SIZE
+            upgradePoints: 0, isInvulnerable: false, color: '#48dbfb', size: GameConstants.PLAYER_SIZE,
+            barriersCollected: 0, barriersUsed: 0
         };
         
         let enemy = { 
@@ -772,6 +773,15 @@
         let barrierSpawnTimer = 0;
         let powerupSpawnTimer = 0;
         
+        // Переменные для отслеживания статистики за игру
+        let currentGameStats = {
+            barriersCollected: 0,
+            barriersUsed: 0,
+            distance: 0,
+            time: 0,
+            xp: 0
+        };
+        
         // Система миссий
         let missions = [
             { 
@@ -781,7 +791,8 @@
                 target: 30, 
                 completed: false, 
                 reward: 10,
-                type: 'time'
+                type: 'time',
+                currentProgress: 0
             },
             { 
                 id: 'collect_5', 
@@ -790,7 +801,8 @@
                 target: 5, 
                 completed: false, 
                 reward: 15,
-                type: 'collect'
+                type: 'collect',
+                currentProgress: 0
             },
             { 
                 id: 'combo_3', 
@@ -799,7 +811,8 @@
                 target: 3, 
                 completed: false, 
                 reward: 20,
-                type: 'combo'
+                type: 'combo',
+                currentProgress: 0
             },
             { 
                 id: 'distance_500', 
@@ -808,7 +821,8 @@
                 target: 500, 
                 completed: false, 
                 reward: 25,
-                type: 'distance'
+                type: 'distance',
+                currentProgress: 0
             },
             { 
                 id: 'use_barriers_3', 
@@ -817,7 +831,8 @@
                 target: 3, 
                 completed: false, 
                 reward: 18,
-                type: 'ability'
+                type: 'ability',
+                currentProgress: 0
             }
         ];
 
@@ -831,7 +846,7 @@
                     upgradePoints: player.upgradePoints
                 },
                 missions: missions,
-                bestTime: Math.max(gameTime, getBestTime() || 0),
+                bestTime: Math.max(currentGameStats.time, getBestTime() || 0),
                 totalUpgradePoints: player.upgradePoints + (getTotalUpgradePoints() || 0)
             };
             localStorage.setItem('soskaChaseUltimateSave', JSON.stringify(saveData));
@@ -929,6 +944,8 @@
             player.totalDistance = 0;
             player.xp = 0;
             player.isInvulnerable = false;
+            player.barriersCollected = 0;
+            player.barriersUsed = 0;
 
             // Сброс улучшений (только на время игры)
             player.powerups = { speed: 0, slow: 0, magnet: 0, shield: 0 };
@@ -942,6 +959,20 @@
             particles = [];
             barrierSpawnTimer = 0;
             powerupSpawnTimer = 0;
+
+            // Сброс статистики текущей игры
+            currentGameStats = {
+                barriersCollected: 0,
+                barriersUsed: 0,
+                distance: 0,
+                time: 0,
+                xp: 0
+            };
+
+            // Сброс прогресса миссий для текущей игры
+            missions.forEach(mission => {
+                mission.currentProgress = 0;
+            });
 
             initControls();
             updateHUD();
@@ -1067,6 +1098,8 @@
             if (player.barriers > 0 && !player.hasActiveBarrier && player.barrierCooldown === 0) {
                 player.barriers--;
                 player.hasActiveBarrier = true;
+                player.barriersUsed++;
+                currentGameStats.barriersUsed++;
                 updateHUD();
                 
                 const barrierBtn = document.getElementById('useBarrier');
@@ -1240,18 +1273,27 @@
                 }
                 
                 let progress = 0;
-                switch (mission.id) {
-                    case 'survive_30': progress = gameTime; break;
-                    case 'collect_5': progress = player.barriers; break;
-                    case 'combo_3': progress = player.combo; break;
-                    case 'distance_500': progress = player.totalDistance; break;
-                    case 'use_barriers_3': 
-                        // Для этой миссии нужна отдельная логика подсчета
-                        progress = mission.currentProgress || 0;
+                switch (mission.type) {
+                    case 'time': 
+                        progress = Math.floor(gameTime);
+                        break;
+                    case 'collect': 
+                        progress = currentGameStats.barriersCollected;
+                        break;
+                    case 'combo': 
+                        progress = player.combo;
+                        break;
+                    case 'distance': 
+                        progress = Math.floor(currentGameStats.distance);
+                        break;
+                    case 'ability': 
+                        progress = currentGameStats.barriersUsed;
                         break;
                 }
                 
-                if (progress >= mission.target) {
+                mission.currentProgress = Math.max(mission.currentProgress, progress);
+                
+                if (mission.currentProgress >= mission.target && !mission.completed) {
                     mission.completed = true;
                     player.upgradePoints += mission.reward;
                     showMissionComplete(mission.name, mission.reward);
@@ -1280,15 +1322,7 @@
                 missionElement.style.border = mission.completed ? 
                     '1px solid #4caf50' : '1px solid rgba(255,255,255,0.1)';
                 
-                let progress = 0;
-                switch (mission.id) {
-                    case 'survive_30': progress = gameTime; break;
-                    case 'collect_5': progress = player.barriers; break;
-                    case 'combo_3': progress = player.combo; break;
-                    case 'distance_500': progress = player.totalDistance; break;
-                    case 'use_barriers_3': progress = mission.currentProgress || 0; break;
-                }
-                
+                const progress = mission.currentProgress || 0;
                 const progressPercent = Math.min((progress / mission.target) * 100, 100);
                 
                 missionElement.innerHTML = `
@@ -1377,7 +1411,9 @@
                 
                 player.x += window.gameMoveState.moveX * currentSpeed;
                 player.y += window.gameMoveState.moveY * currentSpeed;
-                player.totalDistance += Math.sqrt((player.x - oldX) ** 2 + (player.y - oldY) ** 2);
+                const distanceMoved = Math.sqrt((player.x - oldX) ** 2 + (player.y - oldY) ** 2);
+                player.totalDistance += distanceMoved;
+                currentGameStats.distance += distanceMoved;
                 
                 // Границы
                 player.x = Math.max(player.size, Math.min(player.x, canvas.width - player.size));
@@ -1478,6 +1514,8 @@
                 
                 if (dist < player.size + barrier.size && player.barriers < player.maxBarriers) {
                     player.barriers++;
+                    player.barriersCollected++;
+                    currentGameStats.barriersCollected++;
                     
                     // Система комбо
                     player.comboTimeout = GameConstants.COMBO_TIMEOUT;
@@ -1545,6 +1583,7 @@
         // ==================== СИСТЕМА УРОВНЕЙ ====================
         function addXP(amount) {
             player.xp += amount;
+            currentGameStats.xp += amount;
             const xpNeeded = player.level * GameConstants.LEVEL_UP_XP;
             
             if (player.xp >= xpNeeded) {
@@ -1772,20 +1811,40 @@
             ctx.fill();
             ctx.restore();
             
-            // Текст "СОСКА 69"
+            // Улучшенная надпись "СОСКА 69" с лучшей видимостью
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold ' + (enemy.size * 0.4) + 'px Arial';
+            ctx.font = 'bold ' + (enemy.size * 0.35) + 'px Arial';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillText('СОСКА', enemy.x, enemy.y - 5);
+            
+            // Тень для лучшей читаемости
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            
+            ctx.fillText('СОСКА', enemy.x, enemy.y - 8);
             ctx.fillText('69', enemy.x, enemy.y + 8);
+            
+            // Сброс тени для остальных элементов
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
             
             // Глаза
             ctx.fillStyle = '#000000';
             ctx.beginPath();
-            ctx.arc(enemy.x - enemy.size * 0.3, enemy.y - enemy.size * 0.2, enemy.size * 0.1, 0, Math.PI * 2);
-            ctx.arc(enemy.x + enemy.size * 0.3, enemy.y - enemy.size * 0.2, enemy.size * 0.1, 0, Math.PI * 2);
+            ctx.arc(enemy.x - enemy.size * 0.3, enemy.y - enemy.size * 0.2, enemy.size * 0.12, 0, Math.PI * 2);
+            ctx.arc(enemy.x + enemy.size * 0.3, enemy.y - enemy.size * 0.2, enemy.size * 0.12, 0, Math.PI * 2);
             ctx.fill();
+            
+            // Рот
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(enemy.x, enemy.y + enemy.size * 0.15, enemy.size * 0.2, 0.1 * Math.PI, 0.9 * Math.PI);
+            ctx.stroke();
         }
 
         // ==================== ИНТЕРФЕЙС ПОЛЬЗОВАТЕЛЯ ====================
@@ -1797,7 +1856,7 @@
                 minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
             
             // Дистанция
-            document.getElementById('distance').textContent = Math.floor(player.totalDistance);
+            document.getElementById('distance').textContent = Math.floor(currentGameStats.distance);
             
             // Уровень
             document.getElementById('level').textContent = player.level;
@@ -1861,20 +1920,21 @@
         function gameOver() {
             clearInterval(gameInterval);
             
+            // Сохраняем финальное время
+            currentGameStats.time = gameTime;
+            
             // Расчет наград
-            const earnedXP = Math.floor(gameTime * 5);
             const earnedPoints = Math.floor(gameTime / 10);
             
-            // Обновление статистики
-            document.getElementById('finalTime').textContent = formatTime(gameTime);
-            document.getElementById('finalBarriers').textContent = player.barriers;
-            document.getElementById('finalDistance').textContent = Math.floor(player.totalDistance);
-            document.getElementById('finalXP').textContent = earnedXP;
+            // Обновление статистики на экране завершения
+            document.getElementById('finalTime').textContent = formatTime(currentGameStats.time);
+            document.getElementById('finalBarriers').textContent = currentGameStats.barriersCollected;
+            document.getElementById('finalDistance').textContent = Math.floor(currentGameStats.distance);
+            document.getElementById('finalXP').textContent = currentGameStats.xp;
             document.getElementById('newUpgradePoints').textContent = earnedPoints;
             
             // Начисление наград
             player.upgradePoints += earnedPoints;
-            addXP(earnedXP);
             
             // Сохранение игры
             saveGame();
