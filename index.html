@@ -111,50 +111,75 @@
             background: #feca57;
         }
         
-        #touchControls {
+        /* Плавающий джойстик */
+        #floatingJoystick {
             position: absolute;
-            bottom: 10px;
-            left: 0;
-            right: 0;
-            height: 100px;
+            width: 180px;
+            height: 180px;
             pointer-events: none;
+            z-index: 1000;
+            display: none;
         }
         
-        .touch-area {
+        .joystick-base {
             position: absolute;
-            left: 10px;
-            bottom: 0;
-            width: 100px;
-            height: 100px;
-            background: rgba(255, 255, 255, 0.1);
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.15);
             border-radius: 50%;
-            pointer-events: auto;
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .joystick-handle {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s;
         }
         
         .action-buttons {
             position: absolute;
-            right: 10px;
-            bottom: 0;
+            right: 20px;
+            bottom: 20px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 15px;
             pointer-events: auto;
         }
         
         .action-btn {
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             border: none;
             background: rgba(255, 255, 255, 0.2);
-            font-size: 1.5em;
+            font-size: 1.8em;
             cursor: pointer;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
         }
         
         .barrier-active {
             background: rgba(254, 202, 87, 0.3) !important;
-            border: 2px solid #feca57 !important;
+            border: 3px solid #feca57 !important;
+        }
+        
+        .controls-hint {
+            position: absolute;
+            bottom: 120px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -181,7 +206,9 @@
             <div class="menu-content">
                 <h1>КАК ИГРАТЬ</h1>
                 <div style="text-align: left; margin: 1em 0;">
-                    <p>• Перетаскивайте палец в левой области для движения</p>
+                    <p>• Касайтесь ЛЕВОЙ части экрана для движения</p>
+                    <p>• Перетаскивайте палец для управления</p>
+                    <p>• Джойстик появляется в месте касания</p>
                     <p>• Нажимайте правую кнопку для активации барьера</p>
                     <p>• Собирайте желтые щиты для защиты</p>
                     <p>• Барьер защищает от одного удара</p>
@@ -207,11 +234,18 @@
                     </div>
                 </div>
                 
-                <div id="touchControls">
-                    <div class="touch-area" id="moveArea"></div>
-                    <div class="action-buttons">
-                        <button class="action-btn" id="useBarrier">🛡️</button>
-                    </div>
+                <!-- Плавающий джойстик -->
+                <div id="floatingJoystick">
+                    <div class="joystick-base"></div>
+                    <div class="joystick-handle"></div>
+                </div>
+                
+                <div class="controls-hint">
+                    Касайтесь левой части экрана для движения
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn" id="useBarrier">🛡️</button>
                 </div>
             </div>
         </div>
@@ -241,15 +275,19 @@
         let enemy = { x: 0, y: 0 };
         let barriers = [];
         let barrierSpawnTimer = 0;
+        let isJoystickActive = false;
+        let joystickStartX = 0;
+        let joystickStartY = 0;
         
         // Константы игры
         const GameConstants = {
             PLAYER_SIZE: 15,
             ENEMY_SIZE: 30,
             BARRIER_SIZE: 10,
-            PLAYER_SPEED: 3,
-            BARRIER_SPAWN_RATE: 600, // 10 секунд при 60 FPS
-            MAX_BARRIERS: 8
+            PLAYER_SPEED: 4,
+            BARRIER_SPAWN_RATE: 600,
+            MAX_BARRIERS: 8,
+            JOYSTICK_RADIUS: 80
         };
         
         // Функции навигации
@@ -321,69 +359,158 @@
         }
         
         function initControls() {
-            const touchArea = document.getElementById('moveArea');
+            const canvas = document.getElementById('gameCanvas');
             const barrierBtn = document.getElementById('useBarrier');
-            let isMoving = false;
+            const joystick = document.getElementById('floatingJoystick');
+            const joystickHandle = document.querySelector('.joystick-handle');
+            
+            let currentTouchId = null;
             let moveX = 0;
             let moveY = 0;
             
-            // Touch события для движения
-            touchArea.addEventListener('touchstart', handleTouch);
-            touchArea.addEventListener('touchmove', handleTouch);
-            touchArea.addEventListener('touchend', stopMove);
+            // Touch события для всего экрана
+            canvas.addEventListener('touchstart', handleTouchStart);
+            canvas.addEventListener('touchmove', handleTouchMove);
+            canvas.addEventListener('touchend', handleTouchEnd);
+            canvas.addEventListener('touchcancel', handleTouchEnd);
             
             // Mouse события для десктопа
-            touchArea.addEventListener('mousedown', handleMouse);
-            touchArea.addEventListener('mousemove', handleMouse);
-            touchArea.addEventListener('mouseup', stopMove);
-            touchArea.addEventListener('mouseleave', stopMove);
+            canvas.addEventListener('mousedown', handleMouseDown);
+            canvas.addEventListener('mousemove', handleMouseMove);
+            canvas.addEventListener('mouseup', handleMouseUp);
+            canvas.addEventListener('mouseleave', handleMouseUp);
             
             // Кнопка барьера
             barrierBtn.addEventListener('click', useBarrier);
             barrierBtn.addEventListener('touchstart', useBarrier);
             
-            function handleTouch(e) {
+            function handleTouchStart(e) {
                 e.preventDefault();
-                const rect = touchArea.getBoundingClientRect();
                 const touch = e.touches[0];
-                calculateMovement(touch.clientX - rect.left, touch.clientY - rect.top);
-            }
-            
-            function handleMouse(e) {
-                if (e.buttons === 1) {
-                    const rect = touchArea.getBoundingClientRect();
-                    calculateMovement(e.clientX - rect.left, e.clientY - rect.top);
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                
+                // Активируем джойстик только в левой половине экрана
+                if (x < canvas.width / 2) {
+                    activateJoystick(x, y);
+                    currentTouchId = touch.identifier;
                 }
             }
             
-            function calculateMovement(x, y) {
-                const centerX = 50;
-                const centerY = 50;
+            function handleTouchMove(e) {
+                if (!isJoystickActive) return;
                 
-                moveX = (x - centerX) / 50;
-                moveY = (y - centerY) / 50;
+                e.preventDefault();
+                const touch = Array.from(e.touches).find(t => t.identifier === currentTouchId);
+                if (!touch) return;
                 
-                // Ограничение скорости
-                const length = Math.sqrt(moveX * moveX + moveY * moveY);
-                if (length > 1) {
-                    moveX /= length;
-                    moveY /= length;
-                }
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
                 
-                isMoving = true;
+                updateJoystick(x, y);
             }
             
-            function stopMove() {
-                isMoving = false;
+            function handleTouchEnd(e) {
+                if (!isJoystickActive) return;
+                
+                e.preventDefault();
+                deactivateJoystick();
+                currentTouchId = null;
+            }
+            
+            function handleMouseDown(e) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Активируем джойстик только в левой половине экрана
+                if (x < canvas.width / 2) {
+                    activateJoystick(x, y);
+                }
+            }
+            
+            function handleMouseMove(e) {
+                if (!isJoystickActive) return;
+                
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                updateJoystick(x, y);
+            }
+            
+            function handleMouseUp() {
+                if (!isJoystickActive) return;
+                deactivateJoystick();
+            }
+            
+            function activateJoystick(x, y) {
+                isJoystickActive = true;
+                joystickStartX = x;
+                joystickStartY = y;
+                
+                // Позиционируем джойстик
+                joystick.style.left = (x - 90) + 'px';
+                joystick.style.top = (y - 90) + 'px';
+                joystick.style.display = 'block';
+                
                 moveX = 0;
                 moveY = 0;
+                updateJoystickHandle(0, 0);
+            }
+            
+            function updateJoystick(x, y) {
+                const deltaX = x - joystickStartX;
+                const deltaY = y - joystickStartY;
+                
+                // Ограничиваем движение ручки джойстика
+                const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const maxDistance = GameConstants.JOYSTICK_RADIUS;
+                
+                if (distance > maxDistance) {
+                    const scale = maxDistance / distance;
+                    moveX = (deltaX * scale) / maxDistance;
+                    moveY = (deltaY * scale) / maxDistance;
+                    updateJoystickHandle(deltaX * scale, deltaY * scale);
+                } else {
+                    moveX = deltaX / maxDistance;
+                    moveY = deltaY / maxDistance;
+                    updateJoystickHandle(deltaX, deltaY);
+                }
+            }
+            
+            function updateJoystickHandle(x, y) {
+                const joystickHandle = document.querySelector('.joystick-handle');
+                joystickHandle.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+            }
+            
+            function deactivateJoystick() {
+                isJoystickActive = false;
+                moveX = 0;
+                moveY = 0;
+                
+                const joystick = document.getElementById('floatingJoystick');
+                joystick.style.display = 'none';
+                
+                const joystickHandle = document.querySelector('.joystick-handle');
+                joystickHandle.style.transform = 'translate(-50%, -50%)';
             }
             
             // Сохраняем состояние движения для игрового цикла
-            window.gameMoveState = { isMoving, moveX, moveY };
+            window.gameMoveState = { 
+                isMoving: isJoystickActive, 
+                moveX: moveX, 
+                moveY: moveY 
+            };
             
             setInterval(() => {
-                window.gameMoveState = { isMoving, moveX, moveY };
+                window.gameMoveState = { 
+                    isMoving: isJoystickActive, 
+                    moveX: moveX, 
+                    moveY: moveY 
+                };
             }, 16);
         }
         
@@ -391,10 +518,9 @@
             if (player.barriers > 0 && !player.hasActiveBarrier) {
                 player.barriers--;
                 player.hasActiveBarrier = true;
-                player.invulnerable = 180; // 3 секунды защиты
+                player.invulnerable = 180;
                 updateHealthDisplay();
                 
-                // Визуальный эффект активации барьера
                 const barrierBtn = document.getElementById('useBarrier');
                 barrierBtn.classList.add('barrier-active');
                 
@@ -423,7 +549,7 @@
                 if (Math.floor(gameTime) % 1 === 0) {
                     updateTimer();
                 }
-            }, 16); // ~60 FPS
+            }, 16);
         }
         
         function updateGame() {
@@ -449,7 +575,7 @@
                 enemy.y += (dy / distance) * enemy.speed;
             }
             
-            // Спавн барьеров каждые 10 секунд
+            // Спавн барьеров
             barrierSpawnTimer++;
             if (barrierSpawnTimer >= GameConstants.BARRIER_SPAWN_RATE && barriers.length < GameConstants.MAX_BARRIERS) {
                 spawnBarrier();
@@ -491,14 +617,12 @@
             
             if (distToEnemy < player.size + enemy.size) {
                 if (player.hasActiveBarrier) {
-                    // Барьер поглощает удар
                     player.hasActiveBarrier = false;
                     player.invulnerable = 0;
                     const barrierBtn = document.getElementById('useBarrier');
                     barrierBtn.classList.remove('barrier-active');
                     console.log('Барьер поглотил удар!');
                     
-                    // Отталкивание врага при активации барьера
                     const pushForce = 5;
                     const pushX = (enemy.x - player.x) / distToEnemy;
                     const pushY = (enemy.y - player.y) / distToEnemy;
@@ -525,7 +649,6 @@
                 const x = Math.random() * (canvas.width - GameConstants.BARRIER_SIZE * 2) + GameConstants.BARRIER_SIZE;
                 const y = Math.random() * (canvas.height - GameConstants.BARRIER_SIZE * 2) + GameConstants.BARRIER_SIZE;
                 
-                // Проверяем, чтобы барьер не спавнился слишком близко к игроку или врагу
                 const distToPlayer = Math.sqrt(Math.pow(x - player.x, 2) + Math.pow(y - player.y, 2));
                 const distToEnemy = Math.sqrt(Math.pow(x - enemy.x, 2) + Math.pow(y - enemy.y, 2));
                 
@@ -574,7 +697,6 @@
                 ctx.arc(barrier.x, barrier.y, barrier.size, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Иконка щита
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath();
                 ctx.moveTo(barrier.x, barrier.y - barrier.size * 0.6);
@@ -588,7 +710,6 @@
             
             // Игрок
             if (player.hasActiveBarrier) {
-                // Эффект защиты
                 ctx.strokeStyle = '#feca57';
                 ctx.lineWidth = 3;
                 ctx.beginPath();
@@ -601,7 +722,6 @@
             ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
             ctx.fill();
             
-            // Лицо игрока
             ctx.fillStyle = '#000000';
             ctx.beginPath();
             ctx.arc(player.x - 4, player.y - 3, 3, 0, Math.PI * 2);
@@ -612,7 +732,7 @@
             ctx.arc(player.x, player.y + 4, 2, 0, Math.PI);
             ctx.stroke();
             
-            // Враг (число 69)
+            // Враг
             ctx.fillStyle = enemy.color;
             ctx.beginPath();
             ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
@@ -624,7 +744,6 @@
             ctx.textBaseline = 'middle';
             ctx.fillText('69', enemy.x, enemy.y);
             
-            // Глаза врага
             ctx.fillStyle = '#000000';
             ctx.beginPath();
             ctx.arc(enemy.x - enemy.size * 0.3, enemy.y - enemy.size * 0.2, enemy.size * 0.1, 0, Math.PI * 2);
@@ -652,7 +771,6 @@
             startGame();
         }
         
-        // Автоматический запуск
         window.addEventListener('load', function() {
             console.log('Page loaded');
             
