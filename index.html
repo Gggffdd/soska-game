@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="Беги от числа 69! Мобильная игра с верхним видом">
     <title>Number Chase - Беги от 69!</title>
+    
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/mobile.css">
 </head>
@@ -34,8 +37,8 @@
 
                 <div class="controls-info">
                     <h3>Управление:</h3>
-                    <p>• Касание/клик - движение</p>
-                    <p>• Двойное касание - активация барьера</p>
+                    <p>• Перетаскивание в левой области - движение</p>
+                    <p>• Правая кнопка - активация барьера</p>
                     <p>• Свайп вверх - пауза</p>
                 </div>
             </div>
@@ -68,13 +71,6 @@
                     </label>
                 </div>
 
-                <div class="setting-group">
-                    <label>
-                        <input type="checkbox" id="particles" checked>
-                        Частицы
-                    </label>
-                </div>
-
                 <div class="settings-buttons">
                     <button id="saveSettings" class="menu-btn">Сохранить</button>
                     <button id="backToMenu" class="menu-btn">Назад</button>
@@ -93,22 +89,23 @@
                         <span>Время: </span>
                         <span id="timer">0</span>
                     </div>
-                    <div class="barriers-display">
-                        <span>Барьеры: </span>
-                        <span id="barrierCount">0</span>
+                    <div class="health-indicators" id="healthIndicators">
+                        <div class="health-indicator"></div>
+                        <div class="health-indicator"></div>
+                        <div class="health-indicator"></div>
                     </div>
                 </div>
                 
                 <div class="hud-bottom">
                     <button id="pauseBtn" class="hud-btn">⏸️</button>
-                    <button id="barrierBtn" class="hud-btn">🛡️</button>
                 </div>
 
                 <div id="touchControls">
-                    <div class="touch-area" id="moveArea"></div>
+                    <div class="touch-area" id="moveArea">
+                        <!-- Джойстик будет добавлен через JS -->
+                    </div>
                     <div class="action-buttons">
                         <button id="useBarrier" class="action-btn">🛡️</button>
-                        <button id="dash" class="action-btn">⚡</button>
                     </div>
                 </div>
             </div>
@@ -121,7 +118,6 @@
                 <div class="pause-stats">
                     <p>Время: <span id="pauseTime">0</span></p>
                     <p>Барьеры: <span id="pauseBarriers">0</span></p>
-                    <p>Дистанция: <span id="pauseDistance">0</span></p>
                 </div>
                 <div class="pause-buttons">
                     <button id="resumeBtn" class="menu-btn">Продолжить</button>
@@ -144,7 +140,6 @@
                 <div class="gameover-buttons">
                     <button id="playAgainBtn" class="menu-btn">Играть снова</button>
                     <button id="menuFromGameOver" class="menu-btn">В меню</button>
-                    <button id="shareBtn" class="menu-btn">Поделиться</button>
                 </div>
             </div>
         </div>
@@ -166,12 +161,7 @@
                         <span class="stat-label">Собрано барьеров:</span>
                         <span class="stat-value" id="statTotalBarriers">0</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Общее время:</span>
-                        <span class="stat-value" id="statTotalTime">0</span>
-                    </div>
                 </div>
-                <button id="resetStats" class="menu-btn">Сбросить статистику</button>
                 <button id="backFromStats" class="menu-btn">Назад</button>
             </div>
         </div>
@@ -179,17 +169,11 @@
 
     <!-- Аудио элементы -->
     <audio id="bgMusic" loop>
-        <source src="assets/sounds/background.mp3" type="audio/mpeg">
+        <source src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAABAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAABQTEFNRTMuMTAwBKkAAAAAAAAAADUgJAOHQQAB9AAACGDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//tQxAAAAAAAAAAAAAAAAAAAAAAAASAAAAAAA" type="audio/mpeg">
     </audio>
-    <audio id="barrierSound">
-        <source src="assets/sounds/barrier.wav" type="audio/wav">
-    </audio>
-    <audio id="gameOverSound">
-        <source src="assets/sounds/gameover.wav" type="audio/wav">
-    </audio>
-    <audio id="collectSound">
-        <source src="assets/sounds/collect.wav" type="audio/wav">
-    </audio>
+    <audio id="barrierSound" src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA=="></audio>
+    <audio id="gameOverSound" src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA=="></audio>
+    <audio id="collectSound" src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA=="></audio>
 
     <script src="js/utils.js"></script>
     <script src="js/player.js"></script>
