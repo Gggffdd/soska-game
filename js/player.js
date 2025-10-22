@@ -2,14 +2,6 @@ class Player {
     constructor(game) {
         this.game = game;
         this.reset();
-        
-        // Mobile controls
-        this.touchStart = { x: 0, y: 0 };
-        this.isTouching = false;
-        this.velocity = { x: 0, y: 0 };
-        this.friction = 0.9;
-        this.maxSpeed = 5;
-        
         this.setupEventListeners();
     }
 
@@ -19,139 +11,168 @@ class Player {
         this.size = GameConstants.PLAYER_SIZE;
         this.color = '#48dbfb';
         this.barriers = 0;
+        this.maxBarriers = 3;
         this.isDashing = false;
         this.dashCooldown = 0;
         this.invulnerable = 0;
         this.particles = [];
+        
+        // Параметры управления
+        this.speed = 4;
+        this.targetX = this.x;
+        this.targetY = this.y;
+        this.isMoving = false;
+        this.velocityX = 0;
+        this.velocityY = 0;
     }
 
     setupEventListeners() {
-        // Mouse/touch movement
-        this.game.canvas.addEventListener('mousedown', (e) => this.handleStart(e));
-        this.game.canvas.addEventListener('mousemove', (e) => this.handleMove(e));
-        this.game.canvas.addEventListener('mouseup', () => this.handleEnd());
-        
-        this.game.canvas.addEventListener('touchstart', (e) => {
+        const gameArea = document.getElementById('moveArea');
+        let isDragging = false;
+        let dragStart = { x: 0, y: 0 };
+        let currentDrag = { x: 0, y: 0 };
+
+        // Создаем визуал джойстика
+        const joystickBase = document.createElement('div');
+        const joystickHandle = document.createElement('div');
+        joystickBase.className = 'joystick-base';
+        joystickHandle.className = 'joystick-handle';
+        joystickBase.appendChild(joystickHandle);
+        gameArea.appendChild(joystickBase);
+
+        this.joystickHandle = joystickHandle;
+
+        // Touch события
+        gameArea.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            this.handleStart(e.touches[0]);
+            const rect = gameArea.getBoundingClientRect();
+            dragStart.x = e.touches[0].clientX - rect.left;
+            dragStart.y = e.touches[0].clientY - rect.top;
+            currentDrag = { x: 0, y: 0 };
+            isDragging = true;
         });
-        
-        this.game.canvas.addEventListener('touchmove', (e) => {
+
+        gameArea.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
             e.preventDefault();
-            this.handleMove(e.touches[0]);
-        });
-        
-        this.game.canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            this.handleEnd();
-        });
-
-        // Double tap for dash
-        let lastTap = 0;
-        this.game.canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            const currentTime = new Date().getTime();
-            const tapLength = currentTime - lastTap;
-            if (tapLength < 500 && tapLength > 0) {
-                this.activateDash();
-            }
-            lastTap = currentTime;
-        });
-
-        // Dash button
-        document.getElementById('dash').addEventListener('click', () => {
-            this.activateDash();
-        });
-    }
-
-    handleStart(event) {
-        const rect = this.game.canvas.getBoundingClientRect();
-        this.touchStart.x = event.clientX - rect.left;
-        this.touchStart.y = event.clientY - rect.top;
-        this.isTouching = true;
-    }
-
-    handleMove(event) {
-        if (!this.isTouching) return;
-
-        const rect = this.game.canvas.getBoundingClientRect();
-        const touchX = event.clientX - rect.left;
-        const touchY = event.clientY - rect.top;
-
-        // Calculate direction vector
-        const dx = touchX - this.touchStart.x;
-        const dy = touchY - this.touchStart.y;
-        
-        // Normalize and scale velocity
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        if (distance > 5) {
-            this.velocity.x = (dx / distance) * this.maxSpeed;
-            this.velocity.y = (dy / distance) * this.maxSpeed;
-        }
-
-        // Update touch start for smooth movement
-        this.touchStart.x = touchX;
-        this.touchStart.y = touchY;
-    }
-
-    handleEnd() {
-        this.isTouching = false;
-        this.velocity.x = 0;
-        this.velocity.y = 0;
-    }
-
-    activateDash() {
-        if (this.dashCooldown <= 0 && !this.isDashing) {
-            this.isDashing = true;
-            this.dashCooldown = 60; // 1 second at 60fps
-            this.maxSpeed = 10;
-            this.invulnerable = 30;
             
-            // Dash particles
-            for (let i = 0; i < 20; i++) {
-                this.particles.push(Utils.createParticle(
-                    this.x, this.y, '#48dbfb', this.game.ctx
-                ));
+            const rect = gameArea.getBoundingClientRect();
+            const touchX = e.touches[0].clientX - rect.left;
+            const touchY = e.touches[0].clientY - rect.top;
+            
+            currentDrag.x = touchX - dragStart.x;
+            currentDrag.y = touchY - dragStart.y;
+            
+            const maxRadius = 40;
+            const distance = Math.sqrt(currentDrag.x * currentDrag.x + currentDrag.y * currentDrag.y);
+            if (distance > maxRadius) {
+                currentDrag.x = (currentDrag.x / distance) * maxRadius;
+                currentDrag.y = (currentDrag.y / distance) * maxRadius;
             }
             
-            Utils.vibrate([100]);
-            Utils.playSound(this.game.sounds.dash);
+            this.updateMovement(currentDrag.x, currentDrag.y);
+        });
+
+        gameArea.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            isDragging = false;
+            currentDrag = { x: 0, y: 0 };
+            this.isMoving = false;
+            this.joystickHandle.style.transform = 'translate(-50%, -50%)';
+        });
+
+        // Mouse события
+        gameArea.addEventListener('mousedown', (e) => {
+            const rect = gameArea.getBoundingClientRect();
+            dragStart.x = e.clientX - rect.left;
+            dragStart.y = e.clientY - rect.top;
+            currentDrag = { x: 0, y: 0 };
+            isDragging = true;
+        });
+
+        gameArea.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            const rect = gameArea.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            currentDrag.x = mouseX - dragStart.x;
+            currentDrag.y = mouseY - dragStart.y;
+            
+            const maxRadius = 40;
+            const distance = Math.sqrt(currentDrag.x * currentDrag.x + currentDrag.y * currentDrag.y);
+            if (distance > maxRadius) {
+                currentDrag.x = (currentDrag.x / distance) * maxRadius;
+                currentDrag.y = (currentDrag.y / distance) * maxRadius;
+            }
+            
+            this.updateMovement(currentDrag.x, currentDrag.y);
+        });
+
+        gameArea.addEventListener('mouseup', () => {
+            isDragging = false;
+            currentDrag = { x: 0, y: 0 };
+            this.isMoving = false;
+            this.joystickHandle.style.transform = 'translate(-50%, -50%)';
+        });
+
+        gameArea.addEventListener('mouseleave', () => {
+            isDragging = false;
+            currentDrag = { x: 0, y: 0 };
+            this.isMoving = false;
+            this.joystickHandle.style.transform = 'translate(-50%, -50%)';
+        });
+    }
+
+    updateMovement(dragX, dragY) {
+        if (Math.abs(dragX) > 5 || Math.abs(dragY) > 5) {
+            this.isMoving = true;
+            
+            const distance = Math.sqrt(dragX * dragX + dragY * dragY);
+            const speedMultiplier = Math.min(distance / 40, 1);
+            
+            this.velocityX = (dragX / distance) * this.speed * speedMultiplier;
+            this.velocityY = (dragY / distance) * this.speed * speedMultiplier;
+            
+            // Обновляем визуал джойстика
+            if (this.joystickHandle) {
+                const maxMove = 25;
+                const handleX = (dragX / 40) * maxMove;
+                const handleY = (dragY / 40) * maxMove;
+                this.joystickHandle.style.transform = `translate(calc(-50% + ${handleX}px), calc(-50% + ${handleY}px))`;
+            }
+        } else {
+            this.isMoving = false;
+            this.velocityX = 0;
+            this.velocityY = 0;
         }
     }
 
     update() {
-        // Apply friction
-        this.velocity.x *= this.friction;
-        this.velocity.y *= this.friction;
+        // Движение
+        if (this.isMoving) {
+            this.x += this.velocityX;
+            this.y += this.velocityY;
+        }
 
-        // Update position
-        this.x += this.velocity.x;
-        this.y += this.velocity.y;
-
-        // Boundary checking
+        // Границы
         this.x = Utils.clamp(this.x, this.size, GameConstants.CANVAS_WIDTH - this.size);
         this.y = Utils.clamp(this.y, this.size, GameConstants.CANVAS_HEIGHT - this.size);
 
-        // Update dash cooldown
+        // Обновление способностей
         if (this.dashCooldown > 0) {
             this.dashCooldown--;
-            
-            if (this.dashCooldown <= 30 && this.isDashing) {
-                this.isDashing = false;
-                this.maxSpeed = 5;
-            }
         }
 
-        // Update invulnerability
         if (this.invulnerable > 0) {
             this.invulnerable--;
         }
 
-        // Update particles
         this.updateParticles();
 
-        // Create movement particles
-        if ((Math.abs(this.velocity.x) > 0.1 || Math.abs(this.velocity.y) > 0.1) && Math.random() < 0.3) {
+        // Частицы при движении
+        if (this.isMoving && Math.random() < 0.3) {
             this.particles.push(Utils.createParticle(
                 this.x, this.y, '#48dbfb', this.game.ctx
             ));
@@ -170,10 +191,9 @@ class Player {
     draw() {
         const ctx = this.game.ctx;
 
-        // Draw particles
+        // Частицы
         this.particles.forEach(particle => particle.draw());
 
-        // Draw player with pulsing effect when dashing
         ctx.save();
         
         if (this.isDashing) {
@@ -183,35 +203,25 @@ class Player {
             ctx.translate(-this.x, -this.y);
         }
 
-        // Draw main body
+        // Тело игрока
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw face
+        // Лицо
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.arc(this.x - 5, this.y - 3, 4, 0, Math.PI * 2); // Left eye
-        ctx.arc(this.x + 5, this.y - 3, 4, 0, Math.PI * 2); // Right eye
+        ctx.arc(this.x - 5, this.y - 3, 4, 0, Math.PI * 2);
+        ctx.arc(this.x + 5, this.y - 3, 4, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#ff6b6b';
         ctx.beginPath();
-        ctx.arc(this.x, this.y + 5, 3, 0, Math.PI); // Smile
+        ctx.arc(this.x, this.y + 5, 3, 0, Math.PI);
         ctx.fill();
 
-        // Draw dash cooldown indicator
-        if (this.dashCooldown > 0) {
-            const cooldownPercent = this.dashCooldown / 60;
-            ctx.strokeStyle = '#feca57';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size + 8, -Math.PI/2, (-Math.PI/2) + (Math.PI * 2 * (1 - cooldownPercent)));
-            ctx.stroke();
-        }
-
-        // Draw invulnerability effect
+        // Индикатор неуязвимости
         if (this.invulnerable > 0) {
             ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 + Math.sin(Date.now() * 0.1) * 0.3})`;
             ctx.lineWidth = 2;
@@ -224,12 +234,11 @@ class Player {
     }
 
     useBarrier() {
-        if (this.barriers > 0) {
+        if (this.barriers > 0 && this.invulnerable === 0) {
             this.barriers--;
-            this.invulnerable = 90; // 1.5 seconds at 60fps
+            this.invulnerable = 90;
             
-            // Barrier activation effect
-            for (let i = 0; i < 30; i++) {
+            for (let i = 0; i < 20; i++) {
                 this.particles.push(Utils.createParticle(
                     this.x, this.y, '#feca57', this.game.ctx
                 ));
@@ -243,15 +252,18 @@ class Player {
     }
 
     addBarrier() {
-        this.barriers++;
-        Utils.playSound(this.game.sounds.collect);
-        
-        // Collection effect
-        for (let i = 0; i < 15; i++) {
-            this.particles.push(Utils.createParticle(
-                this.x, this.y, '#feca57', this.game.ctx
-            ));
+        if (this.barriers < this.maxBarriers) {
+            this.barriers++;
+            Utils.playSound(this.game.sounds.collect);
+            
+            for (let i = 0; i < 10; i++) {
+                this.particles.push(Utils.createParticle(
+                    this.x, this.y, '#feca57', this.game.ctx
+                ));
+            }
+            return true;
         }
+        return false;
     }
 
     getPosition() {
