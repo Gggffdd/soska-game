@@ -93,49 +93,30 @@ class Utils {
             try {
                 audioElement.volume = volume;
                 audioElement.currentTime = 0;
-                audioElement.play().catch(e => console.log('Audio play failed:', e));
+                const playPromise = audioElement.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => console.log('Audio play failed:', e));
+                }
             } catch (error) {
                 console.log('Sound error:', error);
             }
         }
     }
-
-    static preloadImages(sources, callback) {
-        let loaded = 0;
-        const images = {};
-        
-        sources.forEach(src => {
-            images[src] = new Image();
-            images[src].onload = () => {
-                loaded++;
-                if (loaded === sources.length) {
-                    callback(images);
-                }
-            };
-            images[src].onerror = () => {
-                loaded++;
-                if (loaded === sources.length) {
-                    callback(images);
-                }
-            };
-            images[src].src = src;
-        });
-    }
 }
 
 // Game constants
 const GameConstants = {
-    CANVAS_WIDTH: 800,
-    CANVAS_HEIGHT: 600,
+    CANVAS_WIDTH: 1200,
+    CANVAS_HEIGHT: 1200,
     PLAYER_SIZE: 20,
     ENEMY_SIZE: 40,
     BARRIER_SIZE: 15,
-    COLLECTION_RADIUS: 30,
+    COLLECTION_RADIUS: 25,
     GAME_SPEED: 1,
     DIFFICULTY: {
-        easy: { enemySpeed: 1.5, barrierSpawn: 0.02 },
-        medium: { enemySpeed: 2, barrierSpawn: 0.015 },
-        hard: { enemySpeed: 2.5, barrierSpawn: 0.01 }
+        easy: { enemySpeed: 1.2, barrierSpawn: 0.02 },
+        medium: { enemySpeed: 1.5, barrierSpawn: 0.015 },
+        hard: { enemySpeed: 2.0, barrierSpawn: 0.01 }
     }
 };
 
@@ -164,7 +145,6 @@ class GameState {
 
     onStateChange(newState, oldState) {
         console.log(`State changed: ${oldState} -> ${newState}`);
-        // Здесь можно добавить логику при смене состояний
     }
 
     is(state) {
