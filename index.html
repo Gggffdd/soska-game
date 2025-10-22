@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Number Chase - Беги от 69!</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/mobile.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- Экран загрузки -->
+        <div id="loadingScreen" class="screen">
+            <div class="loading-content">
+                <h1>NUMBER CHASE</h1>
+                <div class="loading-bar">
+                    <div class="loading-progress"></div>
+                </div>
+                <p>Загрузка игры...</p>
+            </div>
+        </div>
+
+        <!-- Главное меню -->
+        <div id="mainMenu" class="screen hidden">
+            <div class="menu-content">
+                <h1>NUMBER CHASE</h1>
+                <p class="game-description">Беги от числа 69! Собирай барьеры для защиты!</p>
+                
+                <div class="menu-buttons">
+                    <button id="startBtn" class="menu-btn">Начать игру</button>
+                    <button id="settingsBtn" class="menu-btn">Настройки</button>
+                    <button id="statsBtn" class="menu-btn">Статистика</button>
+                </div>
+
+                <div class="controls-info">
+                    <h3>Управление:</h3>
+                    <p>• Касание/клик - движение</p>
+                    <p>• Двойное касание - активация барьера</p>
+                    <p>• Свайп вверх - пауза</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Экран настроек -->
+        <div id="settingsScreen" class="screen hidden">
+            <div class="settings-content">
+                <h2>Настройки</h2>
+                
+                <div class="setting-group">
+                    <label for="soundVolume">Громкость звука:</label>
+                    <input type="range" id="soundVolume" min="0" max="100" value="50">
+                    <span id="volumeValue">50%</span>
+                </div>
+
+                <div class="setting-group">
+                    <label for="gameDifficulty">Сложность:</label>
+                    <select id="gameDifficulty">
+                        <option value="easy">Легкая</option>
+                        <option value="medium" selected>Средняя</option>
+                        <option value="hard">Сложная</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="vibration" checked>
+                        Вибрация
+                    </label>
+                </div>
+
+                <div class="setting-group">
+                    <label>
+                        <input type="checkbox" id="particles" checked>
+                        Частицы
+                    </label>
+                </div>
+
+                <div class="settings-buttons">
+                    <button id="saveSettings" class="menu-btn">Сохранить</button>
+                    <button id="backToMenu" class="menu-btn">Назад</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Игровой экран -->
+        <div id="gameScreen" class="screen hidden">
+            <canvas id="gameCanvas"></canvas>
+            
+            <!-- Игровой HUD -->
+            <div id="gameHUD">
+                <div class="hud-top">
+                    <div class="score-display">
+                        <span>Время: </span>
+                        <span id="timer">0</span>
+                    </div>
+                    <div class="barriers-display">
+                        <span>Барьеры: </span>
+                        <span id="barrierCount">0</span>
+                    </div>
+                </div>
+                
+                <div class="hud-bottom">
+                    <button id="pauseBtn" class="hud-btn">⏸️</button>
+                    <button id="barrierBtn" class="hud-btn">🛡️</button>
+                </div>
+
+                <div id="touchControls">
+                    <div class="touch-area" id="moveArea"></div>
+                    <div class="action-buttons">
+                        <button id="useBarrier" class="action-btn">🛡️</button>
+                        <button id="dash" class="action-btn">⚡</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Экран паузы -->
+        <div id="pauseScreen" class="screen hidden">
+            <div class="pause-content">
+                <h2>ПАУЗА</h2>
+                <div class="pause-stats">
+                    <p>Время: <span id="pauseTime">0</span></p>
+                    <p>Барьеры: <span id="pauseBarriers">0</span></p>
+                    <p>Дистанция: <span id="pauseDistance">0</span></p>
+                </div>
+                <div class="pause-buttons">
+                    <button id="resumeBtn" class="menu-btn">Продолжить</button>
+                    <button id="restartBtn" class="menu-btn">Заново</button>
+                    <button id="menuFromPause" class="menu-btn">В меню</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Экран Game Over -->
+        <div id="gameOverScreen" class="screen hidden">
+            <div class="gameover-content">
+                <h2>GAME OVER</h2>
+                <div class="final-stats">
+                    <p>Число 69 догнало вас!</p>
+                    <p>Ваше время: <span id="finalTime">0</span></p>
+                    <p>Собрано барьеров: <span id="finalBarriers">0</span></p>
+                    <p>Лучший результат: <span id="bestTime">0</span></p>
+                </div>
+                <div class="gameover-buttons">
+                    <button id="playAgainBtn" class="menu-btn">Играть снова</button>
+                    <button id="menuFromGameOver" class="menu-btn">В меню</button>
+                    <button id="shareBtn" class="menu-btn">Поделиться</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        <div id="statsScreen" class="screen hidden">
+            <div class="stats-content">
+                <h2>СТАТИСТИКА</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-label">Лучшее время:</span>
+                        <span class="stat-value" id="statBestTime">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Всего игр:</span>
+                        <span class="stat-value" id="statTotalGames">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Собрано барьеров:</span>
+                        <span class="stat-value" id="statTotalBarriers">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Общее время:</span>
+                        <span class="stat-value" id="statTotalTime">0</span>
+                    </div>
+                </div>
+                <button id="resetStats" class="menu-btn">Сбросить статистику</button>
+                <button id="backFromStats" class="menu-btn">Назад</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Аудио элементы -->
+    <audio id="bgMusic" loop>
+        <source src="assets/sounds/background.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="barrierSound">
+        <source src="assets/sounds/barrier.wav" type="audio/wav">
+    </audio>
+    <audio id="gameOverSound">
+        <source src="assets/sounds/gameover.wav" type="audio/wav">
+    </audio>
+    <audio id="collectSound">
+        <source src="assets/sounds/collect.wav" type="audio/wav">
+    </audio>
+
+    <script src="js/utils.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/enemy.js"></script>
+    <script src="js/barrier.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
