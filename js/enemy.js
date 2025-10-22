@@ -6,8 +6,11 @@ class Enemy {
     }
 
     reset() {
-        this.x = Math.random() * GameConstants.CANVAS_WIDTH;
-        this.y = Math.random() * GameConstants.CANVAS_HEIGHT;
+        // Стартовая позиция подальше от игрока
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 300;
+        this.x = GameConstants.CANVAS_WIDTH / 2 + Math.cos(angle) * distance;
+        this.y = GameConstants.CANVAS_HEIGHT / 2 + Math.sin(angle) * distance;
         this.size = GameConstants.ENEMY_SIZE;
         this.speed = GameConstants.DIFFICULTY.medium.enemySpeed;
         this.color = '#ff6b6b';
@@ -15,57 +18,53 @@ class Enemy {
         this.rotationSpeed = 0.02;
         this.pulsePhase = 0;
         this.lastDirectionChange = 0;
-        this.directionChangeInterval = 120; // frames
+        this.directionChangeInterval = 90;
     }
 
     update(player) {
         const playerPos = player.getPosition();
         
-        // Change direction occasionally for more natural movement
+        // Плавное преследование
         this.lastDirectionChange++;
         if (this.lastDirectionChange > this.directionChangeInterval) {
             this.lastDirectionChange = 0;
-            // Small random direction change
-            this.angle += (Math.random() - 0.5) * 0.5;
+            this.angle += (Math.random() - 0.5) * 0.2;
         }
 
-        // Main movement towards player with some randomness
         const dx = playerPos.x - this.x;
         const dy = playerPos.y - this.y;
+        const distanceToPlayer = Math.sqrt(dx * dx + dy * dy);
         const targetAngle = Math.atan2(dy, dx);
         
-        // Smoothly rotate towards player
+        // Плавный поворот
         let angleDiff = targetAngle - this.angle;
         while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
         while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
         
-        this.angle += angleDiff * 0.1;
+        this.angle += angleDiff * 0.08;
 
-        // Move towards player
+        // Движение к игроку
         this.x += Math.cos(this.angle) * this.speed;
         this.y += Math.sin(this.angle) * this.speed;
 
-        // Boundary checking with bounce
-        if (this.x < this.size || this.x > GameConstants.CANVAS_WIDTH - this.size) {
+        // Границы с отскоком
+        const margin = this.size;
+        if (this.x < margin || this.x > GameConstants.CANVAS_WIDTH - margin) {
             this.angle = Math.PI - this.angle;
-            this.x = Utils.clamp(this.x, this.size, GameConstants.CANVAS_WIDTH - this.size);
+            this.x = Utils.clamp(this.x, margin, GameConstants.CANVAS_WIDTH - margin);
         }
-        if (this.y < this.size || this.y > GameConstants.CANVAS_HEIGHT - this.size) {
+        if (this.y < margin || this.y > GameConstants.CANVAS_HEIGHT - margin) {
             this.angle = -this.angle;
-            this.y = Utils.clamp(this.y, this.size, GameConstants.CANVAS_HEIGHT - this.size);
+            this.y = Utils.clamp(this.y, margin, GameConstants.CANVAS_HEIGHT - margin);
         }
 
-        // Update rotation
+        // Анимации
         this.rotationSpeed = 0.02 + (this.speed * 0.01);
-
-        // Update pulse effect
         this.pulsePhase += 0.1;
-
-        // Update particles
         this.updateParticles();
 
-        // Create trail particles
-        if (Math.random() < 0.3) {
+        // Частицы
+        if (Math.random() < 0.2) {
             this.particles.push(Utils.createParticle(
                 this.x, this.y, '#ff6b6b', this.game.ctx
             ));
@@ -84,70 +83,54 @@ class Enemy {
     draw() {
         const ctx = this.game.ctx;
         
-        // Draw particles
+        // Частицы
         this.particles.forEach(particle => particle.draw());
 
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle + Math.PI / 2);
 
-        // Pulse effect
+        // Пульсация
         const pulseScale = 1 + Math.sin(this.pulsePhase) * 0.1;
         ctx.scale(pulseScale, pulseScale);
 
-        // Draw enemy body (number 69)
+        // Тело врага
         ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(0, 0, this.size, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw number 69
+        // Число 69
         ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${this.size * 0.8}px Arial`;
+        ctx.font = `bold ${this.size * 0.7}px Arial`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText('69', 0, 0);
 
-        // Draw angry eyes
+        // Глаза
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.arc(-this.size * 0.3, -this.size * 0.2, this.size * 0.15, 0, Math.PI * 2);
-        ctx.arc(this.size * 0.3, -this.size * 0.2, this.size * 0.15, 0, Math.PI * 2);
+        ctx.arc(-this.size * 0.25, -this.size * 0.15, this.size * 0.12, 0, Math.PI * 2);
+        ctx.arc(this.size * 0.25, -this.size * 0.15, this.size * 0.12, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#000000';
         ctx.beginPath();
-        ctx.arc(-this.size * 0.3, -this.size * 0.2, this.size * 0.08, 0, Math.PI * 2);
-        ctx.arc(this.size * 0.3, -this.size * 0.2, this.size * 0.08, 0, Math.PI * 2);
+        ctx.arc(-this.size * 0.25, -this.size * 0.15, this.size * 0.06, 0, Math.PI * 2);
+        ctx.arc(this.size * 0.25, -this.size * 0.15, this.size * 0.06, 0, Math.PI * 2);
         ctx.fill();
 
-        // Draw angry eyebrows
+        // Брови
         ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(-this.size * 0.4, -this.size * 0.4);
-        ctx.lineTo(-this.size * 0.2, -this.size * 0.35);
-        ctx.moveTo(this.size * 0.4, -this.size * 0.4);
-        ctx.lineTo(this.size * 0.2, -this.size * 0.35);
+        ctx.moveTo(-this.size * 0.35, -this.size * 0.3);
+        ctx.lineTo(-this.size * 0.15, -this.size * 0.25);
+        ctx.moveTo(this.size * 0.35, -this.size * 0.3);
+        ctx.lineTo(this.size * 0.15, -this.size * 0.25);
         ctx.stroke();
 
         ctx.restore();
-
-        // Draw detection radius when close to player
-        const playerPos = this.game.player.getPosition();
-        const distance = Utils.distance(this.x, this.y, playerPos.x, playerPos.y);
-        
-        if (distance < 200) {
-            ctx.save();
-            ctx.globalAlpha = 0.2 + (1 - distance / 200) * 0.3;
-            ctx.strokeStyle = '#ff0000';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]);
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, 200, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.restore();
-        }
     }
 
     setDifficulty(difficulty) {
@@ -159,7 +142,10 @@ class Enemy {
 
         const playerPos = player.getPosition();
         const distance = Utils.distance(this.x, this.y, playerPos.x, playerPos.y);
-        return distance < (this.size + player.getSize()) * 0.8;
+        
+        // Точное столкновение - должны коснуться
+        const collisionDistance = (this.size * 0.8) + (player.getSize() * 0.8);
+        return distance < collisionDistance;
     }
 
     getPosition() {
