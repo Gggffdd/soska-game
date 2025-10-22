@@ -1,0 +1,262 @@
+/* Мобильные стили */
+@media (max-width: 768px) {
+    .menu-content {
+        padding: 2em 1em;
+        margin: 1em;
+        width: 95%;
+    }
+
+    .menu-content h1 {
+        font-size: 2.5em;
+    }
+
+    .menu-btn {
+        padding: 0.8em 1.5em;
+        font-size: 1.1em;
+    }
+
+    .hud-top {
+        font-size: 1em;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+    }
+
+    .hud-bottom {
+        bottom: 80px;
+        left: 10px;
+        right: 10px;
+    }
+
+    .hud-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2em;
+    }
+
+    .touch-area {
+        width: 150px;
+        height: 150px;
+        left: 10px;
+    }
+
+    .action-buttons {
+        right: 10px;
+    }
+
+    .action-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5em;
+    }
+
+    .pause-content,
+    .gameover-content,
+    .stats-content {
+        padding: 1.5em;
+        margin: 1em;
+    }
+
+    .pause-content h2,
+    .gameover-content h2,
+    .stats-content h2 {
+        font-size: 2.5em;
+    }
+
+    .settings-content {
+        padding: 1.5em;
+        margin: 1em;
+    }
+
+    .controls-info {
+        font-size: 0.9em;
+        padding: 1em;
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-content h1 {
+        font-size: 2em;
+    }
+
+    .menu-btn {
+        padding: 0.7em 1.2em;
+        font-size: 1em;
+    }
+
+    .touch-area {
+        width: 120px;
+        height: 120px;
+    }
+
+    .action-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.3em;
+    }
+
+    .hud-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 1.1em;
+    }
+}
+
+/* Портретная ориентация */
+@media (max-height: 600px) and (orientation: portrait) {
+    .menu-content {
+        padding: 1em;
+    }
+
+    .menu-content h1 {
+        font-size: 2em;
+        margin-bottom: 0.5em;
+    }
+
+    .game-description {
+        font-size: 0.9em;
+        margin-bottom: 1em;
+    }
+
+    .menu-buttons {
+        margin-bottom: 1em;
+    }
+
+    .controls-info {
+        display: none;
+    }
+
+    #touchControls {
+        height: 100px;
+    }
+
+    .touch-area {
+        width: 100px;
+        height: 100px;
+    }
+
+    .action-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 1.1em;
+    }
+}
+
+/* Ландшафтная ориентация */
+@media (max-height: 400px) and (orientation: landscape) {
+    .menu-content {
+        padding: 1em;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .menu-content h1 {
+        font-size: 1.8em;
+        margin-bottom: 0.3em;
+    }
+
+    .game-description {
+        font-size: 0.8em;
+        margin-bottom: 0.5em;
+    }
+
+    .menu-buttons {
+        flex-direction: row;
+        gap: 0.5em;
+        margin-bottom: 0.5em;
+    }
+
+    .menu-btn {
+        padding: 0.5em 1em;
+        font-size: 0.9em;
+    }
+
+    .controls-info {
+        display: none;
+    }
+
+    #touchControls {
+        height: 80px;
+    }
+
+    .touch-area {
+        width: 80px;
+        height: 80px;
+    }
+
+    .action-buttons {
+        flex-direction: row;
+    }
+
+    .action-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1em;
+    }
+}
+
+/* Поддержка различных соотношений сторон */
+@media (aspect-ratio: 9/16) {
+    /* Высокие телефоны */
+    .hud-top {
+        top: 5px;
+    }
+
+    .hud-bottom {
+        bottom: 120px;
+    }
+}
+
+@media (aspect-ratio: 10/16) {
+    /* Стандартные телефоны */
+    .hud-top {
+        top: 10px;
+    }
+
+    .hud-bottom {
+        bottom: 100px;
+    }
+}
+
+/* Поддержка notch и безопасных зон */
+@supports(padding: max(0px)) {
+    .hud-top {
+        top: max(20px, env(safe-area-inset-top));
+        left: max(20px, env(safe-area-inset-left));
+        right: max(20px, env(safe-area-inset-right));
+    }
+
+    .hud-bottom {
+        bottom: max(100px, env(safe-area-inset-bottom));
+        left: max(20px, env(safe-area-inset-left));
+        right: max(20px, env(safe-area-inset-right));
+    }
+
+    #touchControls {
+        bottom: max(20px, env(safe-area-inset-bottom));
+    }
+}
+
+/* Улучшения для тач-устройств */
+@media (hover: none) and (pointer: coarse) {
+    .menu-btn,
+    .hud-btn,
+    .action-btn {
+        cursor: default;
+    }
+
+    .menu-btn:active,
+    .hud-btn:active,
+    .action-btn:active {
+        transform: scale(0.95);
+    }
+}
+
+/* Высокий DPI экраны */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .menu-btn,
+    .hud-btn,
+    .action-btn {
+        border: 0.5px solid rgba(255, 255, 255, 0.3);
+    }
+}
