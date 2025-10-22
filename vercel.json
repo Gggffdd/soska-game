@@ -1,29 +1,16 @@
 {
   "version": 2,
   "name": "number-chase-game",
-  "buildCommand": "echo 'No build needed'",
-  "outputDirectory": ".",
-  "functions": {
-    "**/*": {
-      "runtime": "nodejs18.x"
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static"
     }
-  },
+  ],
   "routes": [
     {
-      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|ico|json|webp|mp3|wav))",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
-      },
-      "dest": "/$1"
-    },
-    {
       "src": "/(.*)",
-      "headers": {
-        "X-Content-Type-Options": "nosniff",
-        "X-Frame-Options": "DENY",
-        "X-XSS-Protection": "1; mode=block"
-      },
-      "dest": "/index.html"
+      "dest": "/$1"
     }
   ]
 }
