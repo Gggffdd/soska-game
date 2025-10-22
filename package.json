@@ -2,19 +2,17 @@
   "name": "number-chase-game",
   "version": "1.0.0",
   "description": "Run from the number 69 - Mobile Game",
-  "type": "module",
+  "main": "index.html",
   "scripts": {
-    "dev": "python3 -m http.server 8000 || python -m http.server 8000 || http-server -p 8000",
-    "build": "echo 'No build needed'",
-    "vercel-build": "echo 'Building for Vercel'"
+    "dev": "echo 'Open index.html in browser'",
+    "build": "echo 'Static site - no build needed'"
   },
-  "keywords": ["game", "mobile", "html5", "canvas"],
+  "keywords": [
+    "game",
+    "mobile",
+    "html5",
+    "canvas"
+  ],
   "author": "Developer",
-  "license": "MIT",
-  "devDependencies": {
-    "@vercel/static-build": "^1.3.1"
-  },
-  "engines": {
-    "node": ">=18"
-  }
+  "license": "MIT"
 }
