@@ -151,4 +151,118 @@ class Player {
         this.updateParticles();
 
         // Create movement particles
-        if ((Math.abs(this.velocity.x) > 0.1 || Math.abs
+        if ((Math.abs(this.velocity.x) > 0.1 || Math.abs(this.velocity.y) > 0.1) && Math.random() < 0.3) {
+            this.particles.push(Utils.createParticle(
+                this.x, this.y, '#48dbfb', this.game.ctx
+            ));
+        }
+    }
+
+    updateParticles() {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            this.particles[i].update();
+            if (this.particles[i].isDead()) {
+                this.particles.splice(i, 1);
+            }
+        }
+    }
+
+    draw() {
+        const ctx = this.game.ctx;
+
+        // Draw particles
+        this.particles.forEach(particle => particle.draw());
+
+        // Draw player with pulsing effect when dashing
+        ctx.save();
+        
+        if (this.isDashing) {
+            const scale = 1 + Math.sin(Date.now() * 0.1) * 0.2;
+            ctx.translate(this.x, this.y);
+            ctx.scale(scale, scale);
+            ctx.translate(-this.x, -this.y);
+        }
+
+        // Draw main body
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw face
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(this.x - 5, this.y - 3, 4, 0, Math.PI * 2); // Left eye
+        ctx.arc(this.x + 5, this.y - 3, 4, 0, Math.PI * 2); // Right eye
+        ctx.fill();
+
+        ctx.fillStyle = '#ff6b6b';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y + 5, 3, 0, Math.PI); // Smile
+        ctx.fill();
+
+        // Draw dash cooldown indicator
+        if (this.dashCooldown > 0) {
+            const cooldownPercent = this.dashCooldown / 60;
+            ctx.strokeStyle = '#feca57';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size + 8, -Math.PI/2, (-Math.PI/2) + (Math.PI * 2 * (1 - cooldownPercent)));
+            ctx.stroke();
+        }
+
+        // Draw invulnerability effect
+        if (this.invulnerable > 0) {
+            ctx.strokeStyle = `rgba(255, 255, 255, ${0.5 + Math.sin(Date.now() * 0.1) * 0.3})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size + 5, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+
+    useBarrier() {
+        if (this.barriers > 0) {
+            this.barriers--;
+            this.invulnerable = 90; // 1.5 seconds at 60fps
+            
+            // Barrier activation effect
+            for (let i = 0; i < 30; i++) {
+                this.particles.push(Utils.createParticle(
+                    this.x, this.y, '#feca57', this.game.ctx
+                ));
+            }
+            
+            Utils.vibrate([50, 50, 50]);
+            Utils.playSound(this.game.sounds.barrier);
+            return true;
+        }
+        return false;
+    }
+
+    addBarrier() {
+        this.barriers++;
+        Utils.playSound(this.game.sounds.collect);
+        
+        // Collection effect
+        for (let i = 0; i < 15; i++) {
+            this.particles.push(Utils.createParticle(
+                this.x, this.y, '#feca57', this.game.ctx
+            ));
+        }
+    }
+
+    getPosition() {
+        return { x: this.x, y: this.y };
+    }
+
+    getSize() {
+        return this.size;
+    }
+
+    isInvulnerable() {
+        return this.invulnerable > 0;
+    }
+}
